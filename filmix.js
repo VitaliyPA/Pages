@@ -17,7 +17,7 @@
         var token = '?user_dev_apk=2.0.6&user_dev_id=1d07ba88e4b45d30&user_dev_name=Xiaomi&user_dev_os=12&user_dev_token=aaaabbbbccccddddeeeeffffaaaabbbb&user_dev_vendor=Xiaomi';
         var online_token = Lampa.Storage.get('filmix_token', '');
         if (online_token.length === 32 && token.indexOf('aaaabbbbccccddddeeeeffff') !== -1) { token = token.replace('aaaabbbbccccddddeeeeffffaaaabbbb', online_token); };
-        if (!window.filmix) window.filmix = { max_qualitie: 720, is_max_qualitie: false, replace: false }
+        if (!window.filmix) window.filmix = { max_qualitie: 480, is_max_qualitie: false, replace: false, enable: false }
       /**
        * Поиск
        * @param {Object} _object
