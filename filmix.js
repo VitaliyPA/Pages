@@ -34,6 +34,7 @@
           network.clear(); network.timeout(15000);
           network.silent( (url_api + 'user_profile' + token), function(found) {
             if (found && found.user_data) {
+              window.filmix.max_qualitie = 720;
               if (found.user_data.is_pro) window.filmix.max_qualitie = 1080;
               if (found.user_data.is_pro_plus) window.filmix.max_qualitie = 2160;
             }
