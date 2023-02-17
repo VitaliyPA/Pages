@@ -100,6 +100,7 @@
         } else {
 
           object.filmix_id = title;
+          if ( window.filmix.max_qualitie == 480 ) { token = token.replace(/user_dev_token=.+?&/, 'user_dev_token=bcb8b5f1b5c6df4cb3e5dc51a4fe94c9&'); window.filmix.max_qualitie = 720; }
 
           var url = (window.filmix.is_max_qualitie ? url_api+'post/'+object.filmix_id+token : url_api+'post/'+object.filmix_id+token);
           network.clear(); network.timeout(15000);
@@ -5777,7 +5778,7 @@
         source: Lampa.Lang.translate('settings_rest_source'),
         quality: Lampa.Lang.translate('torrent_parser_quality'),
       };
-      var filter_sources = ['Filmix', 'HDRezka', 'HDVB', 'CDNMovies', 'Alloha', 'VideoDB', /*'Bazon', 'ZetFlix', 'Kinobase',*/ 'Kodik', /*'IFrame',*/ ];
+      var filter_sources = ['Filmix', 'HDRezka', 'HDVB', 'CDNMovies', 'Alloha', /*'VideoDB',*/ /*'Bazon',*/ /*'ZetFlix', 'Kinobase',*/ 'Kodik', /*'IFrame',*/ ];
 
       if (filter_sources.indexOf(balanser) == -1) {
         balanser = 'Filmix';
