@@ -17,7 +17,7 @@
         var token = '?user_dev_apk=2.0.9&user_dev_id=' + Lampa.Utils.uid(16) + '&user_dev_name=Xiaomi&user_dev_os=12&user_dev_token=aaaabbbbccccddddeeeeffffaaaabbbb&user_dev_vendor=Xiaomi';
         var online_token = Lampa.Storage.get('filmix_token', '');
         if (online_token.length === 32 && token.indexOf('aaaabbbbccccddddeeeeffff') !== -1) { token = token.replace('aaaabbbbccccddddeeeeffffaaaabbbb', online_token); };
-        if (!window.filmix) window.filmix = { max_qualitie: 480, is_max_qualitie: false, replace: false, enable: false }
+        if (!window.filmix || !window.filmix.is_my) window.filmix = { max_qualitie: 480, is_max_qualitie: false, is_my: true, replace: false, enable: false }
       /**
        * Поиск
        * @param {Object} _object
@@ -51,7 +51,7 @@
             network.clear(); network.timeout(15000);
             network.silent( url, function (found) {
 
-              //console.log('found',found);
+              //console.log('found', found);
               if (found) {
                 var json = (typeof(found) === 'string' ? JSON.parse(found) : found);
                 if (json.length > 1) {
@@ -424,7 +424,7 @@
         if (object.seasons == undefined) object.seasons = {};
         if (object.movie.number_of_seasons && object.seasons[choice.season+1] == undefined) {
           object.seasons[choice.season+1] = [];
-          component.getEpisodes(choice.season+1, function (episodes) {
+          component.getEpisodes(object, component, network, choice.season+1, function (episodes) {
             object.seasons[choice.season+1] = episodes;
             append(items);
             setTimeout(component.closeFilter, 25);
@@ -536,7 +536,7 @@
         object = _object;
         // console.log('kinopoisk_id', kinopoisk_id, 'similar', similar);
 
-        var title = object.search;
+        var title = encodeURI(object.search);
         if (typeof(similar) == 'object' && similar.slice().pop().link) title = kinopoisk_id;
 
         var url = backend;
@@ -553,7 +553,7 @@
 
         component.loading(true);
         network.clear(); network.timeout(20000);
-        network.silent( url, function (found) {
+        network["native"]( url, function (found) {
             // console.log('found',found);
             if (found && found.result) {
                 if (found.action === 'select') {
@@ -894,7 +894,7 @@
         if (object.seasons == undefined) object.seasons = {};
         if (object.movie.number_of_seasons && object.seasons[choice.season+1] == undefined) {
           object.seasons[choice.season+1] = [];
-          component.getEpisodes(choice.season+1, function (episodes) {
+          component.getEpisodes(object, component, network, choice.season+1, function (episodes) {
             object.seasons[choice.season+1] = episodes;
             append(items);
             setTimeout(component.closeFilter, 25);
@@ -1114,7 +1114,7 @@
 
         var url = backend + '&id=' + object.movie.id + '&kinopoisk_id=' + (object.kinopoisk_id) + '&title=' + encodeURI(object.search);
         network.clear(); network.timeout(20000);
-        network.silent( url , function (found) {
+        network["native"]( url , function (found) {
           // console.log('found',found);
           if (found && found.result) {
             if (found.action === 'done') {
@@ -1397,7 +1397,7 @@
         if (object.seasons == undefined) object.seasons = {};
         if (object.movie.number_of_seasons && object.seasons[choice.season+1] == undefined) {
           object.seasons[choice.season+1] = [];
-          component.getEpisodes(choice.season+1, function (episodes) {
+          component.getEpisodes(object, component, network, choice.season+1, function (episodes) {
             object.seasons[choice.season+1] = episodes;
             append(items);
             setTimeout(component.closeFilter, 25);
@@ -1609,7 +1609,7 @@
         quality: 0
       };
         var translations = [];
-        var backend = backendhost+'/allohaurl?v=333&kinopoisk_id=';
+        var backend = backendhost+'/lampa/allohaurl?v=333';
       /**
        * Поиск
        * @param {Object} _object
@@ -1623,7 +1623,8 @@
         if (isNaN(kinopoisk_id)) { component.empty("kinopoisk_id is null"); return; } else { if (object.kinopoisk_id == undefined) object.kinopoisk_id = kinopoisk_id }
 
         network.clear(); network.timeout(20000);
-        network.silent( backend+kinopoisk_id+'&title='+encodeURI(object.search) , function (found) {
+        var url = backend + '&id=' + object.movie.id + '&kinopoisk_id=' + object.kinopoisk_id + '&title=' + encodeURI(object.search);
+        network["native"]( url, function (found) {
           // console.log('found',found);
           if (found && found.result) {
             if (found.action === 'done') {
@@ -1903,7 +1904,7 @@
         if (object.seasons == undefined) object.seasons = {};
         if (object.movie.number_of_seasons && object.seasons[choice.season+1] == undefined) {
           object.seasons[choice.season+1] = [];
-          component.getEpisodes(choice.season+1, function (episodes) {
+          component.getEpisodes(object, component, network, choice.season+1, function (episodes) {
             object.seasons[choice.season+1] = episodes;
             append(items);
             setTimeout(component.closeFilter, 25);
@@ -2069,7 +2070,7 @@
 
         } else {
           // var url = backend + object.kinopoisk_id + '&link=' + results[element.translation].link + '&translation=' + results[element.translation].translation_id;
-          var url = backend + object.kinopoisk_id + '&link=' + element.link;
+          var url = backend + '&id=' + object.movie.id + '&kinopoisk_id=' + object.kinopoisk_id + '&link=' + element.link;
           // if (element.season) url += '&season=' + element.season + '&episode=' + element.episode;
           network.clear();
           network.timeout(20000);
@@ -2172,54 +2173,7 @@
         object = _object;
         // console.log('kinopoisk_id', kinopoisk_id, 'similar', typeof(similar), similar);
 
-        if (isNaN(kinopoisk_id)) { component.empty("kinopoisk_id is null"); return; } else { if (object.kinopoisk_id == undefined) object.kinopoisk_id = kinopoisk_id }
-
-        var title = object.search;
-        if (typeof(similar) == 'object' && similar.slice().pop().link) title = kinopoisk_id;
-
-        var url = backend;
-        if (isNaN(title) == true || similar == undefined) {
-          if (title.length < 3) { component.empty('title (' + title + ') is smoll'); return; }
-          url += '&id=' + object.movie.id + '&kinopoisk_id=' + (object.kinopoisk_id || 0) + '&title=' + title;
-          var relise = /*object.search_date ||*/ (object.movie.number_of_seasons ? object.movie.first_air_date : object.movie.release_date) || '0000';
-          var year = parseInt((relise + '').slice(0, 4));
-          url += '&year=' + year;
-        } else {
-          var title = similar.slice().pop();
-          url += '&id=' + object.movie.id + '&kinopoisk_id=' + (object.kinopoisk_id || 0) + '&link=' + title.link;
-        }
-
-        component.loading(true);
-        network.clear(); network.timeout(20000);
-        network.silent( url, function (found) {
-          // console.log('found',found);
-          if (found && found.result) {
-            if (found.action === 'select') {
-              var json = (typeof(found.data) === "string" ? JSON.parse(found.data) : found.data);
-              var similars = [];
-              json.forEach(function (film) {
-                similars.push({
-                  id: film.id,
-                  title: film.title + (film.year ? ', '+film.year : '') + (film.country ? ', '+film.country : '') + (film.category ? ', '+film.category : ''),
-                  year: film.year,
-                  link: film.link,
-                  filmId: film.id
-                });
-              });
-              component.similars(similars);
-              component.loading(false);
-              return;
-            } else if (found.action === 'done') {
-              results = (typeof(found.data) === "string" ? JSON.parse(found.data) : found.data);
-              //console.log('results', results);
-              success(results);
-            }
-          }
-          component.loading(false);
-          if (!Object.keys(results).length) component.empty(found.error ? found.error : 'По запросу ('+object.search+') нет результатов');
-        }, function (a, c) {
-          component.empty(network.errorDecode(a, c));
-        });
+        component.component_search(kinopoisk_id, similar, object, component, network, backend, function(res) { results = res; success(results); } );
       };
 
 
@@ -2288,58 +2242,8 @@
 
 
       function extractData(json) {
-        extract = [];
-        translations = [];
-        results.forEach( function (translation, keyt) {
-          if (translation == null) return;
-          //console.log('translation', translation);
-
-          if (translations.indexOf(translation) == -1) { translations[keyt] = translation; }
-          if (translation.serial == 1) {
-            extract[keyt] = { json : [], "file": translation.link, 'serial': translation.serial, translation : translation.translation }
-            translation.playlists.forEach(function (seasons, keys) {
-              if (seasons == null) return;
-              //console.log('keys', keys, 'seasons', seasons);
-
-              extract[keyt].last_season = keys;
-              var folder = [];
-              seasons.forEach(function (episode, keye) {
-                if (episode == null) return;
-                //console.log('keye', keye, 'episode', episode);
-
-                  var qualities = Object.keys(episode);
-                  //if (qualities) qualities = qualities.filter( function (elem) { return parseInt(elem) <= parseInt(????) && parseInt(elem) !== 0 });
-                  var qualitie = Math.max.apply(null, qualities);
-                  var link = episode[qualitie];
-
-                  folder[keye] = {
-                    "id": keys + '_' + keye,
-                    "comment": keye + ' ' + Lampa.Lang.translate('torrent_serial_episode') + ' <i>' + qualitie + '</i>',
-                    "file": link,
-                    "episode": keye,
-                    "season": keys,
-                    "quality": qualitie,
-                    "qualities": qualities,
-                    "translation": keyt, //translation,
-                  };
-
-              })
-              extract[keyt].json[keys] = { "id": keys, "comment": keys + " сезон", "folder": folder, "translation": keyt };
-            })
-          } else if (translation.serial == 0) {
-            var qualities = (translation.playlists == undefined ? [] : Object.keys(translation.playlists));
-            if (qualities.length > 0) {
-              var qualitie = qualities.slice().pop();
-              var link = translation.playlists[qualitie];
-              extract[keyt] = { json : {}, "file": link, translation : translation.translation, "quality": qualitie, "qualities": qualities, 'serial': translation.serial, subtitles: translation.subtitles };
-            } else {
-              var qualitie = translation.quality;
-              var link = 'link';
-              extract[keyt] = { json : {}, "file": link, translation : translation.translation, "quality": qualitie, "qualities": qualities, 'serial': translation.serial, subtitles: translation.subtitles };
-            }
-          }
-        })
-        //console.log('extract', extract);
+        component.component_extractData(json, results, object, component, network, backend, function(_extract, _translations) { extract = _extract; translations = _translations; } );
+        // console.log('extract', extract);
       }
       /**
        * Найти поток
@@ -2471,7 +2375,7 @@
         if (object.seasons == undefined) object.seasons = {};
         if (object.movie.number_of_seasons && object.seasons[choice.season+1] == undefined) {
           object.seasons[choice.season+1] = [];
-          component.getEpisodes(choice.season+1, function (episodes) {
+          component.getEpisodes(object, component, network, choice.season+1, function (episodes) {
             object.seasons[choice.season+1] = episodes;
             append(items);
             setTimeout(component.closeFilter, 25);
@@ -2684,52 +2588,7 @@
         object = _object;
         // console.log('kinopoisk_id', kinopoisk_id, 'similar', similar);
 
-        var title = object.search;
-        if (typeof(similar) == 'object' && similar.slice().pop().link) title = kinopoisk_id;
-
-        var url = backend;
-        if (isNaN(title) == true || similar == undefined) {
-          if (title.length < 3) { component.empty('title (' + title + ') is smoll'); return; }
-          url += '&id=' + object.movie.id + '&kinopoisk_id=' + (object.kinopoisk_id || 0) + '&title=' + title;
-          var relise = /*object.search_date ||*/ (object.movie.number_of_seasons ? object.movie.first_air_date : object.movie.release_date) || '0000';
-          var year = parseInt((relise + '').slice(0, 4));
-          url += '&year=' + year;
-        } else {
-          var title = similar.slice().pop();
-          url += '&id=' + object.movie.id + '&kinopoisk_id=' + (object.kinopoisk_id || 0) + '&link=' + title.link;
-        }
-
-        component.loading(true);
-        network.clear(); network.timeout(20000);
-        network.silent( url, function (found) {
-          // console.log('found',found);
-          if (found && found.result) {
-            if (found.action === 'select') {
-              var json = (typeof(found.data) === "string" ? JSON.parse(found.data) : found.data);
-              var similars = [];
-              json.forEach(function (film) {
-                similars.push({
-                  id: film.id,
-                  title: film.title + (film.year ? ', '+film.year : '') + (film.country ? ', '+film.country : '') + (film.category ? ', '+film.category : ''),
-                  year: film.year,
-                  link: film.link,
-                  filmId: film.id
-                });
-              });
-              component.similars(similars);
-              component.loading(false);
-              return;
-            } else if (found.action === 'done') {
-              results = (typeof(found.data) === "string" ? JSON.parse(found.data) : found.data);
-              //console.log('results', results);
-              success(results);
-            }
-          }
-          component.loading(false);
-          if (!Object.keys(results).length) component.empty(found.error ? found.error : 'По запросу ('+object.search+') нет результатов');
-        }, function (a, c) {
-          component.empty(network.errorDecode(a, c));
-        });
+        component.component_search(kinopoisk_id, similar, object, component, network, backend, function(res) { results = res; success(results); } );
       };
 
 
@@ -2798,58 +2657,8 @@
 
 
       function extractData(json) {
-        extract = [];
-        translations = [];
-        results.forEach( function (translation, keyt) {
-          if (translation == null) return;
-          //console.log('translation', translation);
-
-          if (translations.indexOf(translation) == -1) { translations[keyt] = translation; }
-          if (translation.serial == 1) {
-            extract[keyt] = { json : [], "file": translation.link, 'serial': translation.serial, translation : translation.translation }
-            translation.playlists.forEach(function (seasons, keys) {
-              if (seasons == null) return;
-              //console.log('keys', keys, 'seasons', seasons);
-
-              extract[keyt].last_season = keys;
-              var folder = [];
-              seasons.forEach(function (episode, keye) {
-                if (episode == null) return;
-                //console.log('keye', keye, 'episode', episode);
-
-                  var qualities = Object.keys(episode);
-                  //if (qualities) qualities = qualities.filter( function (elem) { return parseInt(elem) <= parseInt(????) && parseInt(elem) !== 0 });
-                  var qualitie = Math.max.apply(null, qualities);
-                  var link = episode[qualitie];
-
-                  folder[keye] = {
-                    "id": keys + '_' + keye,
-                    "comment": keye + ' ' + Lampa.Lang.translate('torrent_serial_episode') + ' <i>' + qualitie + '</i>',
-                    "file": link,
-                    "episode": keye,
-                    "season": keys,
-                    "quality": qualitie,
-                    "qualities": qualities,
-                    "translation": keyt, //translation,
-                  };
-
-              })
-              extract[keyt].json[keys] = { "id": keys, "comment": keys + " сезон", "folder": folder, "translation": keyt };
-            })
-          } else if (translation.serial == 0) {
-            var qualities = (translation.playlists == undefined ? [] : Object.keys(translation.playlists));
-            if (qualities.length > 0) {
-              var qualitie = qualities.slice().pop();
-              var link = translation.playlists[qualitie];
-              extract[keyt] = { json : {}, "file": link, translation : translation.translation, "quality": qualitie, "qualities": qualities, 'serial': translation.serial, subtitles: translation.subtitles };
-            } else {
-              var qualitie = translation.quality;
-              var link = 'link';
-              extract[keyt] = { json : {}, "file": link, translation : translation.translation, "quality": qualitie, "qualities": qualities, 'serial': translation.serial, subtitles: translation.subtitles };
-            }
-          }
-        })
-        //console.log('extract', extract);
+        component.component_extractData(json, results, object, component, network, backend, function(_extract, _translations) { extract = _extract; translations = _translations; } );
+        // console.log('extract', extract);
       }
       /**
        * Найти поток
@@ -2981,7 +2790,7 @@
         if (object.seasons == undefined) object.seasons = {};
         if (object.movie.number_of_seasons && object.seasons[choice.season+1] == undefined) {
           object.seasons[choice.season+1] = [];
-          component.getEpisodes(choice.season+1, function (episodes) {
+          component.getEpisodes(object, component, network, choice.season+1, function (episodes) {
             object.seasons[choice.season+1] = episodes;
             append(items);
             setTimeout(component.closeFilter, 25);
@@ -3169,7 +2978,7 @@
         quality: 0
       };
         var translations = [];
-        var backend = backendhost+'/kodikurl?v=333&kinopoisk_id=';
+        var backend = backendhost+'/lampa/kodikurl?v=333';
       /**
        * Поиск
        * @param {Object} _object
@@ -3183,7 +2992,8 @@
         if (isNaN(kinopoisk_id)) { component.empty("kinopoisk_id is null"); return; } else { if (object.kinopoisk_id == undefined) object.kinopoisk_id = kinopoisk_id }
 
         network.clear(); network.timeout(20000);
-        network.silent( backend+kinopoisk_id+'&title='+encodeURI(object.search) , function (found) {
+        var url = backend + '&id=' + object.movie.id + '&kinopoisk_id=' + object.kinopoisk_id + '&title=' + encodeURI(object.search);
+        network["native"](url, function (found) {
           // console.log('found',found);
           if (found && found.result) {
             if (found.action === 'done') {
@@ -3276,9 +3086,8 @@
           call();
         } else {
           results[voice].getEpisodes = true;
-          network.clear();
-          network.timeout(20000);
-          var url = backend + object.kinopoisk_id + '&link=' + results[voice].link + '&translation=' + results[voice]./*translation_*/id;
+          network.clear(); network.timeout(20000);
+          var url = backend + '&id=' + object.movie.id + '&kinopoisk_id=' + object.kinopoisk_id + '&link=' + results[voice].link + '&translation=' + results[voice]./*translation_*/id;
           network.silent(url, function (found) {
             //console.log('found', found);
             if (found.error) { component.empty(found.error); return; }
@@ -3632,7 +3441,7 @@
           if ( results[element.translation].serial == 1 &&  Object.keys(results[element.translation].playlists[ element.season ][ element.episode ]).length > 1)
             return call(element);
         } else {
-          var url = backend + object.kinopoisk_id + '&translation=' + results[element.translation]./*translation_*/id;
+          var url = backend + '&id=' + object.movie.id + '&kinopoisk_id=' + object.kinopoisk_id + '&translation=' + results[element.translation]./*translation_*/id;
           if (element.season) url += '&season=' + element.season + '&episode=' + element.episode;
           url += '&link=' + results[element.translation].link;
           network.clear();
@@ -3686,10 +3495,7 @@
         hlsproxy: 0
       };
         var translations = [];
-        // var url = 'https://bazon.cc/api/search?token=93c3474cbfe2c87d96fcf0d4d020ac98&kp=1005878';
-        var url = 'http://back.freebie.tom.ru/bazon/api/search?kp=';
-        // var backend = 'https://bazon.cc/api/playlist?token=93c3474cbfe2c87d96fcf0d4d020ac98&kp=1005878&ref=&ip=freebie.tom.ru';
-        var backend = backendhost+'/bazonurl?v=333&kpid=';
+        var backend = backendhost+'/lampa/bazonurl?v=333';
         var hlsproxy = { use: false, link: 'http://back.freebie.tom.ru:8888/', extension: '.m3u8' };
       /**
        * Поиск
@@ -3697,29 +3503,15 @@
        */
 
 
-      this.search = function (_object, kinopoisk_id) {
+      this.search = function (_object, kinopoisk_id, similar) {
         object = _object;
-        //console.log('kinopoisk_id', kinopoisk_id);
+        // console.log('kinopoisk_id', kinopoisk_id, 'similar', similar);
 
-        if (isNaN(kinopoisk_id)) { component.empty("kinopoisk_id is null"); return; } else { if (object.kinopoisk_id == undefined) object.kinopoisk_id = kinopoisk_id }
+        if (!window.whois) { component.whois(_object, kinopoisk_id, similar, network); component.loading(false); return; } 
+        else if (!window.whois && !window.whois.ip) window.whois.hlsproxy = false;
+        else if (window.whois && window.whois.ip && window.whois.ip.startsWith('192.168.1')) window.whois.hlsproxy = false; else window.whois.hlsproxy = true;
 
-        if (!window.whois) {
-          component.whois(kinopoisk_id); component.loading(false); return;
-        } else if (window.whois.ip.startsWith('192.168.1')) window.whois.hlsproxy = false; else window.whois.hlsproxy = true;
-
-        network.clear();
-        network.timeout(30000);
-        network.silent(url + kinopoisk_id, function (found) {
-          //console.log('found',found);
-          if (found && found.results) {
-            results = (typeof(found) === "string" ? JSON.parse(found) : found).results;
-            success(results);
-          }
-          component.loading(false);
-          if (!Object.keys(results).length) component.empty(found.error ? found.error : 'По запросу (' + 'kinopoisk_id='+kinopoisk_id + ') нет результатов');
-        }, function (a, c) {
-          component.empty(network.errorDecode(a, c));
-        });
+        component.component_search(kinopoisk_id, similar, object, component, network, backend, function(res) { results = res; success(results); } );
       };
 
 
@@ -3773,7 +3565,7 @@
 
 
       function success(json) {
-        // уже присвоен results = json;
+        if (results.length !== json.length) results = json;
         extractData(json);
         filter();
         append(filtred());
@@ -4021,7 +3813,7 @@
         if (object.seasons == undefined) object.seasons = {};
         if (object.movie.number_of_seasons && object.seasons[choice.season+1] == undefined) {
           object.seasons[choice.season+1] = [];
-          component.getEpisodes(choice.season+1, function (episodes) {
+          component.getEpisodes(object, component, network, choice.season+1, function (episodes) {
             object.seasons[choice.season+1] = episodes;
             append(items);
             setTimeout(component.closeFilter, 25);
@@ -4129,37 +3921,38 @@
         if (element.link.substr(-4) === ".mp4" || element.link.indexOf('index.m3u8') > 0) return call(element);
         //console.log('element', element);
 
-        var link = backend + object.kinopoisk_id;
-        if (element.season != undefined) link += '&season=' + element.season + '&episode=' + element.episode;
-        link += '&quality=' + element.quality.split('p')[0] + '&proxy=' + hlsproxy.use + '&link=' + element.link;
-        if (choice.hlsproxy == 2) link = backend.replace('bazonurl','bazonurl2') + object.kinopoisk_id;
-        network.clear();
-        network.timeout(15000);
-        network.silent( link, function (found) {
+        var url = backend + '&id=' + object.movie.id + '&kinopoisk_id=' + (object.kinopoisk_id || object.film_id);
+        if (element.season != undefined) url += '&season=' + element.season + '&episode=' + element.episode;
+        url += '&quality=' + element.quality.split('p')[0] + '&proxy=' + hlsproxy.use + '&link=' + element.link;
+        if (choice.hlsproxy == 2) url = backend.replace('bazonurl','bazonurl2') + '&id=' + object.movie.id + '&kinopoisk_id=' + (object.kinopoisk_id || object.film_id) + '&link=link';
 
-          //console.log('found', found);
-          if (found == undefined) return error('found == undefined');
-          if (typeof(found) === "string") found = JSON.parse(found);
-          if (found.error   !== undefined) return error(found.error);
-          hlsproxy.hlsproxy_last = choice.hlsproxy;
+        network.clear(); network.timeout(15000);
+        network.silent( url, function (found) {
 
-          if (choice.hlsproxy == 2) {
-            if (found.results === undefined) return error('found.results === undefined)');
-            found.results.forEach( function (translation, keyt) {
-              var key = translations[translation.translation];
-              if (results[key]) results[key].playlists = translation.playlists;
-            })
-          } else {
-            results[element.translation].playlists = found;
+          // console.log('found', found);
+          // if (found && typeof(found) === "string") found = JSON.parse(found);
+          if (found && found.result && found.action === 'done') {
+            hlsproxy.hlsproxy_last = choice.hlsproxy;
+
+            if (choice.hlsproxy == 2) {
+              if (found.data === undefined) return error('found.results === undefined)');
+              found.data.forEach( function (translation, keyt) {
+                var key = translations[translation.translation];
+                if (results[key]) results[key].playlists = translation.playlists;
+              })
+            } else {
+              results[element.translation].playlists = found.data;
+            }
+
+            extractData(results);
+            return call(element);
           }
-
-          extractData(results);
-          return call(element);
+          else if (found && found.error) { return error(found.error); }
+          else if (found) { return error(found); }
+          else { return error('found == undefined'); }
 
         }, function (a, c) {
-          return error(network.errorDecode(a, c))
-        }, false, {
-          dataType: 'text'
+            return error(network.errorDecode(a, c));
         });
       }
 
@@ -4454,7 +4247,7 @@
         if (object.seasons == undefined) object.seasons = {};
         if (object.movie.number_of_seasons && object.seasons[choice.season+1] == undefined) {
           object.seasons[choice.season+1] = [];
-          component.getEpisodes(choice.season+1, function (episodes) {
+          component.getEpisodes(object, component, network, choice.season+1, function (episodes) {
             object.seasons[choice.season+1] = episodes;
             append(items);
             setTimeout(component.closeFilter, 25);
@@ -4985,7 +4778,7 @@
         if (object.seasons == undefined) object.seasons = {};
         if (object.movie.number_of_seasons && object.seasons[choice.season+1] == undefined) {
           object.seasons[choice.season+1] = [];
-          component.getEpisodes(choice.season+1, function (episodes) {
+          component.getEpisodes(object, component, network, choice.season+1, function (episodes) {
             object.seasons[choice.season+1] = episodes;
             append(items);
             setTimeout(component.closeFilter, 25);
@@ -5498,7 +5291,7 @@
         if (object.seasons == undefined) object.seasons = {};
         if (object.movie.number_of_seasons && object.seasons[choice.season+1] == undefined) {
           object.seasons[choice.season+1] = [];
-          component.getEpisodes(choice.season+1, function (episodes) {
+          component.getEpisodes(object, component, network, choice.season+1, function (episodes) {
             object.seasons[choice.season+1] = episodes;
             append(items);
             setTimeout(component.closeFilter, 25);
@@ -5745,7 +5538,7 @@
       this.proxy = function (name) {
         var prox = Lampa.Storage.get('online_proxy_all');
         var need = Lampa.Storage.get('online_proxy_' + name);
-        if (name === 'kinobase') need = 'http://back.freebie.tom.ru/proxy/';
+        if (name === 'kinobase') need = backendhost + '/proxy/';
         if (need) prox = need;
 
         if (prox && prox.slice(-1) !== '/') {
@@ -5778,7 +5571,7 @@
         source: Lampa.Lang.translate('settings_rest_source'),
         quality: Lampa.Lang.translate('torrent_parser_quality'),
       };
-      var filter_sources = ['Filmix', 'HDRezka', 'HDVB', 'CDNMovies', 'Alloha', /*'VideoDB',*/ /*'Bazon',*/ /*'ZetFlix', 'Kinobase',*/ 'Kodik', /*'IFrame',*/ ];
+      var filter_sources = ['Filmix', 'HDRezka', 'HDVB', 'CDNMovies', 'Alloha', /*'VideoDB', 'ZetFlix', 'Bazon', 'Kinobase',*/ 'Kodik', /*'IFrame',*/ ];
 
       if (filter_sources.indexOf(balanser) == -1) {
         balanser = 'Filmix';
@@ -5937,7 +5730,7 @@
                 if (kinopoisk_id) {
                     object.kinopoisk_id = kinopoisk_id;
                     sources[balanser].search(object, kinopoisk_id);
-                } else if (balanser == 'HDRezka' || balanser == 'ZetFlix') {
+                } else if (balanser == 'HDRezka' || balanser == 'ZetFlix' || balanser == 'Bazon') {
                     sources[balanser].search(object, 0);
                 }
                 else pillow();
@@ -6382,7 +6175,128 @@
         window.removeEventListener('resize', minus);
       };
 
-      this.getEpisodes = function (season, call) {
+      this.whois = function (_object, kinopoisk_id, similar, network) {
+        object = _object;
+        window.whois = { ip : '127.0.0.1' };
+        network["native"](backendhost+'/lampa/whois?v=333&id=' + object.movie.id +'&title=' + encodeURI(object.search), function (json) {
+          window.whois.ip = json.ip;
+          sources[balanser].search(object, kinopoisk_id, similar);
+      }, function (a, c) {
+          sources[balanser].search(object, kinopoisk_id, similar);
+        });
+      };
+
+      this.component_search = function (kinopoisk_id, similar, _object, component, network, backend, call) {
+        object = _object;
+        var results = [];
+
+        var url = backend;
+        if (typeof(similar) == 'object' && similar.slice().pop().link) {
+          var sim = similar.slice().pop();
+          url += '&id=' + object.movie.id + '&kinopoisk_id=' + (object.kinopoisk_id || 0) + '&link=' + sim.link;
+        } else {
+          if ((object.kinopoisk_id || kinopoisk_id || 0) == 0 && object.search.length < 3) { component.empty('title (' + object.search + ') is smoll'); return; }
+          url += '&id=' + object.movie.id + '&kinopoisk_id=' + (object.kinopoisk_id || kinopoisk_id || 0) + '&title=' + encodeURI(object.search);
+          var relise = (object.movie.number_of_seasons ? object.movie.first_air_date : object.movie.release_date) || '0000';
+          var year = parseInt((relise + '').slice(0, 4));
+          url += '&year=' + year;
+        }
+
+        component.loading(true);
+        network.clear(); network.timeout(15000);
+        network["native"]( url, function (found) {
+            // console.log('found', found);
+            if (found && found.result) {
+                if (found.action === 'select') {
+                    var json = (typeof(found.data) === "string" ? JSON.parse(found.data) : found.data);
+                    var similars = [];
+                    json.forEach(function (film) {
+                      similars.push({
+                        id: film.id,
+                        title: film.title + (film.link.indexOf('/serials/') != -1 ? ', Сериал' : '') + (film.year ? ', '+film.year : '') + (film.country ? ', '+film.country : '') + (film.category ? ', '+film.category : ''),
+                        year: film.year,
+                        link: film.link,
+                        filmId: film.id
+                      });
+                    });
+                    component.similars(similars);
+                    component.loading(false);
+                    return;
+                } else if (found.action === 'done') {
+                    results = (typeof(found.data) === "string" ? JSON.parse(found.data) : found.data);
+                    object.film_id = found.id;
+                    //console.log('results', results);
+                    if (results.length == 0) { component.loading(false); component.empty('В карточке пусто'); return; }
+                    call(results);
+                }
+            }
+            component.loading(false);
+            if (!Object.keys(results).length) component.empty(found.error ? found.error : 'По запросу ('+object.search+') нет результатов');
+        }, function (a, c) {
+          component.empty(network.errorDecode(a, c));
+        });
+      };
+
+      this.component_extractData = function (json, results, _object, component, network, backend, call) {
+        object = _object;    
+        var extract = [];
+        var translations = [];
+
+        results.forEach( function (translation, keyt) {
+          if (translation == null) return;
+          //console.log('translation', translation);
+         
+          if (translations.indexOf(translation) == -1) { translations[keyt] = translation; }
+
+          if (translation.serial == 1) {
+            extract[keyt] = { json : [], "file": translation.link, 'serial': translation.serial, translation : translation.translation }
+            translation.playlists.forEach(function (seasons, keys) {
+              if (seasons == null) return;
+              //console.log('keys', keys, 'seasons', seasons);
+
+              extract[keyt].last_season = keys;
+              var folder = [];
+              seasons.forEach(function (episode, keye) {
+                if (episode == null) return;
+                //console.log('keye', keye, 'episode', episode);
+
+                  var qualities = Object.keys(episode);
+                  //if (qualities) qualities = qualities.filter( function (elem) { return parseInt(elem) <= parseInt(????) && parseInt(elem) !== 0 });
+                  var qualitie = Math.max.apply(null, qualities);
+                  var link = episode[qualitie];
+
+                  folder[keye] = {
+                    "id": keys + '_' + keye,
+                    "comment": keye + ' ' + Lampa.Lang.translate('torrent_serial_episode') + ' <i>' + qualitie + '</i>',
+                    "file": link,
+                    "episode": keye,
+                    "season": keys,
+                    "quality": qualitie,
+                    "qualities": qualities,
+                    "translation": keyt, //translation,
+                  };
+
+              })
+              extract[keyt].json[keys] = { "id": keys, "comment": keys + " сезон", "folder": folder, "translation": keyt };
+            })
+          } else if (translation.serial == 0) {
+            var qualities = (translation.playlists == undefined ? [] : Object.keys(translation.playlists));
+            if (qualities.length > 0) {
+              var qualitie = qualities.slice().pop();
+              var link = translation.playlists[qualitie];
+              extract[keyt] = { json : {}, "file": link, translation : translation.translation, "quality": qualitie, "qualities": qualities, 'serial': translation.serial, subtitles: translation.subtitles };
+            } else {
+              var qualitie = translation.quality;
+              var link = 'link';
+              extract[keyt] = { json : {}, "file": link, translation : translation.translation, "quality": qualitie, "qualities": qualities, 'serial': translation.serial, subtitles: translation.subtitles };
+            }
+          }
+        })
+        call(extract, translations);
+      }
+
+      this.getEpisodes = function (_object, component, network, season, call) {
+        object = _object;
         var episodes = [];
 
         if (typeof object.movie.id == 'number' && object.movie.name) {
@@ -6398,298 +6312,294 @@
         } else call(episodes);
       };
 
-      this.whois = function (param) {
-        window.whois = { ip : '127.0.0.1' };
-        network["native"](backendhost+'/lampa/whois?v=333', function (json) {
-          window.whois.ip = json.ip;
-          sources[balanser].search(object, param);
-      }, function (a, c) {
-          sources[balanser].search(object, param);
-        });
-      };
-
     }
 
-    if (!Lampa.Lang) {
-      var lang_data = {};
-      Lampa.Lang = {
-        add: function add(data) {
-          lang_data = data;
-        },
-        translate: function translate(key) {
-          return lang_data[key] ? lang_data[key].ru : key;
-        }
-      };
-    }
+    function startPlugin() {
+      window.plugin_FilmixPVA_ready = true;
 
-    Lampa.Lang.add({
-      online_nolink: {
-        ru: 'Не удалось извлечь ссылку',
-        uk: 'Неможливо отримати посилання',
-        en: 'Failed to fetch link'
-      },
-      online_waitlink: {
-        ru: 'Работаем над извлечением ссылки, подождите...',
-        uk: 'Працюємо над отриманням посилання, зачекайте...',
-        en: 'Working on extracting the link, please wait...'
-      },
-      online_balanser: {
-        ru: 'Балансер',
-        uk: 'Балансер',
-        en: 'Balancer'
-      },
-      helper_online_file: {
-        ru: 'Удерживайте клавишу "ОК" для вызова контекстного меню',
-        uk: 'Утримуйте клавішу "ОК" для виклику контекстного меню',
-        en: 'Hold the "OK" key to bring up the context menu'
-      },
-      online_query_start: {
-        ru: 'По запросу',
-        uk: 'На запит',
-        en: 'On request'
-      },
-      online_query_end: {
-        ru: 'нет результатов',
-        uk: 'немає результатів',
-        en: 'no results'
-      },
-      title_online: {
-        ru: 'Онлайн',
-        uk: 'Онлайн',
-        en: 'Online'
-      },
-      title_filmix: {
-        ru: 'Filmix',
-        uk: 'Filmix',
-        en: 'Filmix',
-      },
-      title_proxy: {
-        ru: 'Прокси',
-        uk: 'Проксі',
-        en: 'Proxy'
-      },
-      online_proxy_title: {
-        ru: 'Основной прокси',
-        uk: 'Основний проксі',
-        en: 'Main proxy'
-      },
-      online_proxy_descr: {
-        ru: 'Будет использоваться для всех балансеров',
-        uk: 'Використовуватиметься для всіх балансерів',
-        en: 'Will be used for all balancers'
-      },
-      online_proxy_placeholder: {
-        ru: 'Например: http://proxy.com',
-        uk: 'Наприклад: http://proxy.com',
-        en: 'For example: http://proxy.com'
-      },
-      filmix_param_add_title: {
-        ru: 'Добавить ТОКЕН от Filmix',
-        uk: 'Додати ТОКЕН від Filmix',
-        en: 'Add TOKEN from Filmix'
-      },
-      filmix_param_add_descr: {
-        ru: 'Добавьте ТОКЕН для подключения подписки',
-        uk: 'Додайте ТОКЕН для підключення передплати',
-        en: 'Add a TOKEN to connect a subscription'
-      },
-      filmix_param_placeholder: {
-        ru: 'Например: nxjekeb57385b..',
-        uk: 'Наприклад: nxjekeb57385b..',
-        en: 'For example: nxjekeb57385b..'
-      },
-      filmix_param_add_device: {
-        ru: 'Добавить устройство на Filmix',
-        uk: 'Додати пристрій на Filmix',
-        en: 'Add Device to Filmix'
-      },
-      filmix_modal_text: {
-        ru: 'Введите его на странице https://filmix.ac/consoles в вашем авторизованном аккаунте!',
-        uk: 'Введіть його на сторінці https://filmix.ac/consoles у вашому авторизованому обліковому записі!',
-        en: 'Enter it at https://filmix.ac/consoles in your authorized account!'
-      },
-      filmix_modal_wait: {
-        ru: 'Ожидаем код',
-        uk: 'Очікуємо код',
-        en: 'Waiting for the code'
-      },
-      filmix_copy_secuses: {
-        ru: 'Код скопирован в буфер обмена',
-        uk: 'Код скопійовано в буфер обміну',
-        en: 'Code copied to clipboard'
-      },
-      filmix_copy_fail: {
-        ru: 'Ошибка при копировании',
-        uk: 'Помилка при копіюванні',
-        en: 'Copy error'
-      },
-      filmix_nodevice: {
-        ru: 'Устройство не авторизовано',
-        uk: 'Пристрій не авторизований',
-        en: 'Device not authorized'
-      },
-      title_status: {
-        ru: 'Статус',
-        uk: 'Статус',
-        en: 'Status'
-      },
-      online_voice_subscribe: {
-        ru: 'Подписаться на перевод',
-        uk: 'Підписатися на переклад',
-        en: 'Subscribe to translation'
-      },
-      online_voice_success: {
-        ru: 'Вы успешно подписались',
-        uk: 'Ви успішно підписалися',
-        en: 'You have successfully subscribed'
-      },
-      online_voice_error: {
-        ru: 'Возникла ошибка',
-        uk: 'Виникла помилка',
-        en: 'An error has occurred'
-      }
-    });
-
-    function resetTemplates() {
-      Lampa.Template.add('online', "<div class=\"online selector\">\n        <div class=\"online__body\">\n            <div style=\"position: absolute;left: 0;top: -0.3em;width: 2.4em;height: 2.4em\">\n                <svg style=\"height: 2.4em; width:  2.4em;\" viewBox=\"0 0 128 128\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n                    <circle cx=\"64\" cy=\"64\" r=\"56\" stroke=\"white\" stroke-width=\"16\"/>\n                    <path d=\"M90.5 64.3827L50 87.7654L50 41L90.5 64.3827Z\" fill=\"white\"/>\n                </svg>\n            </div>\n            <div class=\"online__title\" style=\"padding-left: 2.1em;\">{title}</div>\n            <div class=\"online__quality\" style=\"padding-left: 3.4em;\">{quality}{info}</div>\n        </div>\n    </div>");
-      Lampa.Template.add('online_folder', "<div class=\"online selector\">\n        <div class=\"online__body\">\n            <div style=\"position: absolute;left: 0;top: -0.3em;width: 2.4em;height: 2.4em\">\n                <svg style=\"height: 2.4em; width:  2.4em;\" viewBox=\"0 0 128 112\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n                    <rect y=\"20\" width=\"128\" height=\"92\" rx=\"13\" fill=\"white\"/>\n                    <path d=\"M29.9963 8H98.0037C96.0446 3.3021 91.4079 0 86 0H42C36.5921 0 31.9555 3.3021 29.9963 8Z\" fill=\"white\" fill-opacity=\"0.23\"/>\n                    <rect x=\"11\" y=\"8\" width=\"106\" height=\"76\" rx=\"13\" fill=\"white\" fill-opacity=\"0.51\"/>\n                </svg>\n            </div>\n            <div class=\"online__title\" style=\"padding-left: 2.1em;\">{title}</div>\n            <div class=\"online__quality\" style=\"padding-left: 3.4em;\">{quality}{info}</div>\n        </div>\n    </div>");
-    }
-
-    var button = "<div class=\"full-start__button selector view--online\" data-subtitle=\"Источник Filmix\">\n    <svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:svgjs=\"http://svgjs.com/svgjs\" version=\"1.1\" width=\"512\" height=\"512\" x=\"0\" y=\"0\" viewBox=\"0 0 45 45\" style=\"enable-background:new 0 0 512 512\" xml:space=\"preserve\" class=\"\">\n    <g xmlns=\"http://www.w3.org/2000/svg\">\n        <path d=\"M0 20v20h40V0H0v20zM32 7v3h-6.7c-8 0-9 .5-9.4 4.5l-.4 3 8.3.3 8.2.3V24H16v11H9V22.1C9 10.6 9.2 9 11.1 6.6 13 4.1 13.6 4 22.6 4H32v3z\" fill=\"currentColor\"/>\n     </g></svg>\n\n    <span>#{title_filmix}</span>\n    </div>";
-
-    Lampa.Component.add('FilmixPVA', component); //то же самое
-
-    resetTemplates();
-    Lampa.Listener.follow('full', function (e) {
-      if (e.type == 'complite') {
-        var btn = $(Lampa.Lang.translate(button));
-        btn.on('hover:enter', function () {
-          resetTemplates();
-          Lampa.Component.add('FilmixPVA', component);
-          Lampa.Activity.push({
-            url: '',
-            title: Lampa.Lang.translate('title_filmix'),
-            component: 'FilmixPVA',
-            search: e.data.movie.title,
-            search_one: e.data.movie.title,
-            search_two: e.data.movie.original_title,
-            movie: e.data.movie,
-            page: 1
-          });
-        });
-        e.object.activity.render().find('.view--torrent').after(btn);
-      }
-    }); ///////ONLINE/////////
-
-    ///////FILMIX/////////
-    var network = new Lampa.Reguest();
-    var api_url = 'http://filmixapp.cyou/api/v2/';
-    var user_dev = '?user_dev_apk=2.0.9&user_dev_id=' + Lampa.Utils.uid(16) + '&user_dev_name=Xiaomi&user_dev_os=12&user_dev_vendor=Xiaomi&user_dev_token=';
-    var ping_auth;
-    Lampa.Params.select('filmix_token', '', '');
-    Lampa.Template.add('settings_filmix', "<div>\n        <div class=\"settings-param selector\" data-name=\"filmix_token\" data-type=\"input\" placeholder=\"#{filmix_param_placeholder}\">\n            <div class=\"settings-param__name\">#{filmix_param_add_title}</div>\n            <div class=\"settings-param__value\"></div>\n            <div class=\"settings-param__descr\">#{filmix_param_add_descr}</div>\n        </div>\n        <div class=\"settings-param selector\" data-name=\"filmix_add\" data-static=\"true\">\n            <div class=\"settings-param__name\">#{filmix_param_add_device}</div>\n        </div>\n    </div>");
-    Lampa.Storage.listener.follow('change', function (e) {
-      if (e.name == 'filmix_token') {
-        if (e.value) checkPro(e.value);else {
-          Lampa.Storage.set("filmix_status", {});
-          showStatus();
-        }
-      }
-    });
-
-    function addSettingsFilmix() {
-      if (Lampa.Settings.main && !Lampa.Settings.main().render().find('[data-component="filmix"]').length) {
-        var field = $("<div class=\"settings-folder selector\" data-component=\"filmix\">\n                <div class=\"settings-folder__icon\">\n                    <svg height=\"57\" viewBox=\"0 0 58 57\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n                    <path d=\"M20 20.3735V45H26.8281V34.1262H36.724V26.9806H26.8281V24.3916C26.8281 21.5955 28.9062 19.835 31.1823 19.835H39V13H26.8281C23.6615 13 20 15.4854 20 20.3735Z\" fill=\"white\"/>\n                    <rect x=\"2\" y=\"2\" width=\"54\" height=\"53\" rx=\"5\" stroke=\"white\" stroke-width=\"4\"/>\n                    </svg>\n                </div>\n                <div class=\"settings-folder__name\">Filmix</div>\n            </div>");
-        Lampa.Settings.main().render().find('[data-component="more"]').after(field);
-        Lampa.Settings.main().update();
-      }
-    }
-
-    if (window.appready) addSettingsFilmix();else {
-      Lampa.Listener.follow('app', function (e) {
-        if (e.type == 'ready') addSettingsFilmix();
-      });
-    }
-    Lampa.Settings.listener.follow('open', function (e) {
-      if (e.name == 'filmix') {
-        e.body.find('[data-name="filmix_add"]').unbind('hover:enter').on('hover:enter', function () {
-          var user_code = '';
-          var user_token = '';
-          var modal = $('<div><div class="broadcast__text">' + Lampa.Lang.translate('filmix_modal_text') + '</div><div class="broadcast__device selector" style="text-align: center">' + Lampa.Lang.translate('filmix_modal_wait') + '...</div><br><div class="broadcast__scan"><div></div></div></div></div>');
-          Lampa.Modal.open({
-            title: '',
-            html: modal,
-            onBack: function onBack() {
-              Lampa.Modal.close();
-              Lampa.Controller.toggle('settings_component');
-              clearInterval(ping_auth);
-            },
-            onSelect: function onSelect() {
-              Lampa.Utils.copyTextToClipboard(user_code, function () {
-                Lampa.Noty.show(Lampa.Lang.translate('filmix_copy_secuses'));
-              }, function () {
-                Lampa.Noty.show(Lampa.Lang.translate('filmix_copy_fail'));
-              });
-            }
-          });
-          ping_auth = setInterval(function () {
-            checkPro(user_token, function () {
-              Lampa.Modal.close();
-              clearInterval(ping_auth);
-              Lampa.Storage.set("filmix_token", user_token);
-              e.body.find('[data-name="filmix_token"] .settings-param__value').text(user_token);
-              Lampa.Controller.toggle('settings_component');
-            });
-          }, 10000);
-          network.clear();
-          network.timeout(10000);
-          network.quiet(api_url + 'token_request' + user_dev, function (found) {
-            if (found.status == 'ok') {
-              user_token = found.code;
-              user_code = found.user_code;
-              modal.find('.selector').text(user_code);
-            } else {
-              Lampa.Noty.show(found);
-            }
-          }, function (a, c) {
-            Lampa.Noty.show(network.errorDecode(a, c));
-          });
-        });
-        showStatus();
-      }
-    });
-
-    function showStatus() {
-      var status = Lampa.Storage.get("filmix_status", '{}');
-      var info = Lampa.Lang.translate('filmix_nodevice');
-
-      if (status.login) {
-        if (status.is_pro) info = status.login + ' - PRO ' + Lampa.Lang.translate('filter_rating_to') + ' - ' + status.pro_date;else if (status.is_pro_plus) info = status.login + ' - PRO_PLUS ' + Lampa.Lang.translate('filter_rating_to') + ' - ' + status.pro_date;else info = status.login + ' - NO PRO';
-      }
-
-      var field = $(Lampa.Lang.translate("\n            <div class=\"settings-param\" data-name=\"filmix_status\" data-static=\"true\">\n                <div class=\"settings-param__name\">#{title_status}</div>\n                <div class=\"settings-param__value\">".concat(info, "</div>\n            </div>")));
-      $('.settings [data-name="filmix_status"]').remove();
-      $('.settings [data-name="filmix_add"]').after(field);
-    }
-
-    function checkPro(token, call) {
-      network.clear();
-      network.timeout(8000);
-      network.silent(api_url + 'user_profile' + user_dev + token, function (json) {
-        if (json) {
-          if (json.user_data) {
-            Lampa.Storage.set("filmix_status", json.user_data);
-            if (call) call();
-          } else {
-            Lampa.Storage.set("filmix_status", {});
+      if (!Lampa.Lang) {
+        var lang_data = {};
+        Lampa.Lang = {
+          add: function add(data) {
+            lang_data = data;
+          },
+          translate: function translate(key) {
+            return lang_data[key] ? lang_data[key].ru : key;
           }
+        };
+      }
 
+      Lampa.Lang.add({
+        online_nolink: {
+          ru: 'Не удалось извлечь ссылку',
+          uk: 'Неможливо отримати посилання',
+          en: 'Failed to fetch link'
+        },
+        online_waitlink: {
+          ru: 'Работаем над извлечением ссылки, подождите...',
+          uk: 'Працюємо над отриманням посилання, зачекайте...',
+          en: 'Working on extracting the link, please wait...'
+        },
+        online_balanser: {
+          ru: 'Балансер',
+          uk: 'Балансер',
+          en: 'Balancer'
+        },
+        helper_online_file: {
+          ru: 'Удерживайте клавишу "ОК" для вызова контекстного меню',
+          uk: 'Утримуйте клавішу "ОК" для виклику контекстного меню',
+          en: 'Hold the "OK" key to bring up the context menu'
+        },
+        online_query_start: {
+          ru: 'По запросу',
+          uk: 'На запит',
+          en: 'On request'
+        },
+        online_query_end: {
+          ru: 'нет результатов',
+          uk: 'немає результатів',
+          en: 'no results'
+        },
+        title_online: {
+          ru: 'Онлайн',
+          uk: 'Онлайн',
+          en: 'Online'
+        },
+        title_filmix: {
+          ru: 'Filmix',
+          uk: 'Filmix',
+          en: 'Filmix',
+        },
+        title_proxy: {
+          ru: 'Прокси',
+          uk: 'Проксі',
+          en: 'Proxy'
+        },
+        online_proxy_title: {
+          ru: 'Основной прокси',
+          uk: 'Основний проксі',
+          en: 'Main proxy'
+        },
+        online_proxy_descr: {
+          ru: 'Будет использоваться для всех балансеров',
+          uk: 'Використовуватиметься для всіх балансерів',
+          en: 'Will be used for all balancers'
+        },
+        online_proxy_placeholder: {
+          ru: 'Например: http://proxy.com',
+          uk: 'Наприклад: http://proxy.com',
+          en: 'For example: http://proxy.com'
+        },
+        filmix_param_add_title: {
+          ru: 'Добавить ТОКЕН от Filmix',
+          uk: 'Додати ТОКЕН від Filmix',
+          en: 'Add TOKEN from Filmix'
+        },
+        filmix_param_add_descr: {
+          ru: 'Добавьте ТОКЕН для подключения подписки',
+          uk: 'Додайте ТОКЕН для підключення передплати',
+          en: 'Add a TOKEN to connect a subscription'
+        },
+        filmix_param_placeholder: {
+          ru: 'Например: nxjekeb57385b..',
+          uk: 'Наприклад: nxjekeb57385b..',
+          en: 'For example: nxjekeb57385b..'
+        },
+        filmix_param_add_device: {
+          ru: 'Добавить устройство на Filmix',
+          uk: 'Додати пристрій на Filmix',
+          en: 'Add Device to Filmix'
+        },
+        filmix_modal_text: {
+          ru: 'Введите его на странице https://filmix.ac/consoles в вашем авторизованном аккаунте!',
+          uk: 'Введіть його на сторінці https://filmix.ac/consoles у вашому авторизованому обліковому записі!',
+          en: 'Enter it at https://filmix.ac/consoles in your authorized account!'
+        },
+        filmix_modal_wait: {
+          ru: 'Ожидаем код',
+          uk: 'Очікуємо код',
+          en: 'Waiting for the code'
+        },
+        filmix_copy_secuses: {
+          ru: 'Код скопирован в буфер обмена',
+          uk: 'Код скопійовано в буфер обміну',
+          en: 'Code copied to clipboard'
+        },
+        filmix_copy_fail: {
+          ru: 'Ошибка при копировании',
+          uk: 'Помилка при копіюванні',
+          en: 'Copy error'
+        },
+        filmix_nodevice: {
+          ru: 'Устройство не авторизовано',
+          uk: 'Пристрій не авторизований',
+          en: 'Device not authorized'
+        },
+        title_status: {
+          ru: 'Статус',
+          uk: 'Статус',
+          en: 'Status'
+        },
+        online_voice_subscribe: {
+          ru: 'Подписаться на перевод',
+          uk: 'Підписатися на переклад',
+          en: 'Subscribe to translation'
+        },
+        online_voice_success: {
+          ru: 'Вы успешно подписались',
+          uk: 'Ви успішно підписалися',
+          en: 'You have successfully subscribed'
+        },
+        online_voice_error: {
+          ru: 'Возникла ошибка',
+          uk: 'Виникла помилка',
+          en: 'An error has occurred'
+        }
+      });
+
+      function resetTemplates() {
+        Lampa.Template.add('online', "<div class=\"online selector\">\n        <div class=\"online__body\">\n            <div style=\"position: absolute;left: 0;top: -0.3em;width: 2.4em;height: 2.4em\">\n                <svg style=\"height: 2.4em; width:  2.4em;\" viewBox=\"0 0 128 128\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n                    <circle cx=\"64\" cy=\"64\" r=\"56\" stroke=\"white\" stroke-width=\"16\"/>\n                    <path d=\"M90.5 64.3827L50 87.7654L50 41L90.5 64.3827Z\" fill=\"white\"/>\n                </svg>\n            </div>\n            <div class=\"online__title\" style=\"padding-left: 2.1em;\">{title}</div>\n            <div class=\"online__quality\" style=\"padding-left: 3.4em;\">{quality}{info}</div>\n        </div>\n    </div>");
+        Lampa.Template.add('online_folder', "<div class=\"online selector\">\n        <div class=\"online__body\">\n            <div style=\"position: absolute;left: 0;top: -0.3em;width: 2.4em;height: 2.4em\">\n                <svg style=\"height: 2.4em; width:  2.4em;\" viewBox=\"0 0 128 112\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n                    <rect y=\"20\" width=\"128\" height=\"92\" rx=\"13\" fill=\"white\"/>\n                    <path d=\"M29.9963 8H98.0037C96.0446 3.3021 91.4079 0 86 0H42C36.5921 0 31.9555 3.3021 29.9963 8Z\" fill=\"white\" fill-opacity=\"0.23\"/>\n                    <rect x=\"11\" y=\"8\" width=\"106\" height=\"76\" rx=\"13\" fill=\"white\" fill-opacity=\"0.51\"/>\n                </svg>\n            </div>\n            <div class=\"online__title\" style=\"padding-left: 2.1em;\">{title}</div>\n            <div class=\"online__quality\" style=\"padding-left: 3.4em;\">{quality}{info}</div>\n        </div>\n    </div>");
+      }
+
+      var button = "<div class=\"full-start__button selector view--online\" data-subtitle=\"Источник Filmix\">\n    <svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:svgjs=\"http://svgjs.com/svgjs\" version=\"1.1\" width=\"512\" height=\"512\" x=\"0\" y=\"0\" viewBox=\"0 0 45 45\" style=\"enable-background:new 0 0 512 512\" xml:space=\"preserve\" class=\"\">\n    <g xmlns=\"http://www.w3.org/2000/svg\">\n        <path d=\"M0 20v20h40V0H0v20zM32 7v3h-6.7c-8 0-9 .5-9.4 4.5l-.4 3 8.3.3 8.2.3V24H16v11H9V22.1C9 10.6 9.2 9 11.1 6.6 13 4.1 13.6 4 22.6 4H32v3z\" fill=\"currentColor\"/>\n     </g></svg>\n\n    <span>#{title_filmix}</span>\n    </div>";
+
+      Lampa.Component.add('FilmixPVA', component); //то же самое
+
+      resetTemplates();
+      Lampa.Listener.follow('full', function (e) {
+        if (e.type == 'complite') {
+          var btn = $(Lampa.Lang.translate(button));
+          btn.on('hover:enter', function () {
+            resetTemplates();
+            Lampa.Component.add('FilmixPVA', component);
+            Lampa.Activity.push({
+              url: '',
+              title: Lampa.Lang.translate('title_filmix'),
+              component: 'FilmixPVA',
+              search: e.data.movie.title,
+              search_one: e.data.movie.title,
+              search_two: e.data.movie.original_title,
+              movie: e.data.movie,
+              page: 1
+            });
+          });
+          e.object.activity.render().find('.view--torrent').after(btn);
+        }
+      });
+
+      ///////FILMIX/////////
+      var network = new Lampa.Reguest();
+      var api_url = 'http://filmixapp.cyou/api/v2/';
+      var user_dev = '?user_dev_apk=2.0.9&user_dev_id=' + Lampa.Utils.uid(16) + '&user_dev_name=Xiaomi&user_dev_os=12&user_dev_vendor=Xiaomi&user_dev_token=';
+      var ping_auth;
+      Lampa.Params.select('filmix_token', '', '');
+      Lampa.Template.add('settings_filmix', "<div>\n        <div class=\"settings-param selector\" data-name=\"filmix_token\" data-type=\"input\" placeholder=\"#{filmix_param_placeholder}\">\n            <div class=\"settings-param__name\">#{filmix_param_add_title}</div>\n            <div class=\"settings-param__value\"></div>\n            <div class=\"settings-param__descr\">#{filmix_param_add_descr}</div>\n        </div>\n        <div class=\"settings-param selector\" data-name=\"filmix_add\" data-static=\"true\">\n            <div class=\"settings-param__name\">#{filmix_param_add_device}</div>\n        </div>\n    </div>");
+      Lampa.Storage.listener.follow('change', function (e) {
+        if (e.name == 'filmix_token') {
+          if (e.value) checkPro(e.value);else {
+            Lampa.Storage.set("filmix_status", {});
+            showStatus();
+          }
+        }
+      });
+
+      function addSettingsFilmix() {
+        if (Lampa.Settings.main && !Lampa.Settings.main().render().find('[data-component="filmix"]').length) {
+          var field = $("<div class=\"settings-folder selector\" data-component=\"filmix\">\n                <div class=\"settings-folder__icon\">\n                    <svg height=\"57\" viewBox=\"0 0 58 57\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n                    <path d=\"M20 20.3735V45H26.8281V34.1262H36.724V26.9806H26.8281V24.3916C26.8281 21.5955 28.9062 19.835 31.1823 19.835H39V13H26.8281C23.6615 13 20 15.4854 20 20.3735Z\" fill=\"white\"/>\n                    <rect x=\"2\" y=\"2\" width=\"54\" height=\"53\" rx=\"5\" stroke=\"white\" stroke-width=\"4\"/>\n                    </svg>\n                </div>\n                <div class=\"settings-folder__name\">Filmix</div>\n            </div>");
+          Lampa.Settings.main().render().find('[data-component="more"]').after(field);
+          Lampa.Settings.main().update();
+        }
+      }
+
+      if (window.appready) addSettingsFilmix();else {
+        Lampa.Listener.follow('app', function (e) {
+          if (e.type == 'ready') addSettingsFilmix();
+        });
+      }
+      Lampa.Settings.listener.follow('open', function (e) {
+        if (e.name == 'filmix') {
+          e.body.find('[data-name="filmix_add"]').unbind('hover:enter').on('hover:enter', function () {
+            var user_code = '';
+            var user_token = '';
+            var modal = $('<div><div class="broadcast__text">' + Lampa.Lang.translate('filmix_modal_text') + '</div><div class="broadcast__device selector" style="text-align: center">' + Lampa.Lang.translate('filmix_modal_wait') + '...</div><br><div class="broadcast__scan"><div></div></div></div></div>');
+            Lampa.Modal.open({
+              title: '',
+              html: modal,
+              onBack: function onBack() {
+                Lampa.Modal.close();
+                Lampa.Controller.toggle('settings_component');
+                clearInterval(ping_auth);
+              },
+              onSelect: function onSelect() {
+                Lampa.Utils.copyTextToClipboard(user_code, function () {
+                  Lampa.Noty.show(Lampa.Lang.translate('filmix_copy_secuses'));
+                }, function () {
+                  Lampa.Noty.show(Lampa.Lang.translate('filmix_copy_fail'));
+                });
+              }
+            });
+            ping_auth = setInterval(function () {
+              checkPro(user_token, function () {
+                Lampa.Modal.close();
+                clearInterval(ping_auth);
+                Lampa.Storage.set("filmix_token", user_token);
+                e.body.find('[data-name="filmix_token"] .settings-param__value').text(user_token);
+                Lampa.Controller.toggle('settings_component');
+              });
+            }, 10000);
+            network.clear();
+            network.timeout(10000);
+            network.quiet(api_url + 'token_request' + user_dev, function (found) {
+              if (found.status == 'ok') {
+                user_token = found.code;
+                user_code = found.user_code;
+                modal.find('.selector').text(user_code);
+              } else {
+                Lampa.Noty.show(found);
+              }
+            }, function (a, c) {
+              Lampa.Noty.show(network.errorDecode(a, c));
+            });
+          });
           showStatus();
         }
-      }, function (a, c) {
-        Lampa.Noty.show(network.errorDecode(a, c));
       });
+
+      function showStatus() {
+        var status = Lampa.Storage.get("filmix_status", '{}');
+        var info = Lampa.Lang.translate('filmix_nodevice');
+
+        if (status.login) {
+          if (status.is_pro) info = status.login + ' - PRO ' + Lampa.Lang.translate('filter_rating_to') + ' - ' + status.pro_date;else if (status.is_pro_plus) info = status.login + ' - PRO_PLUS ' + Lampa.Lang.translate('filter_rating_to') + ' - ' + status.pro_date;else info = status.login + ' - NO PRO';
+        }
+
+        var field = $(Lampa.Lang.translate("\n            <div class=\"settings-param\" data-name=\"filmix_status\" data-static=\"true\">\n                <div class=\"settings-param__name\">#{title_status}</div>\n                <div class=\"settings-param__value\">".concat(info, "</div>\n            </div>")));
+        $('.settings [data-name="filmix_status"]').remove();
+        $('.settings [data-name="filmix_add"]').after(field);
+      }
+
+      function checkPro(token, call) {
+        network.clear();
+        network.timeout(8000);
+        network.silent(api_url + 'user_profile' + user_dev + token, function (json) {
+          if (json) {
+            if (json.user_data) {
+              Lampa.Storage.set("filmix_status", json.user_data);
+              if (call) call();
+            } else {
+              Lampa.Storage.set("filmix_status", {});
+            }
+
+            showStatus();
+          }
+        }, function (a, c) {
+          Lampa.Noty.show(network.errorDecode(a, c));
+        });
+      }
     }
+
+    if (!window.plugin_FilmixPVA_ready) startPlugin();
 
     // Lampa.Storage.set('is_true_mobile', 'false');
 
