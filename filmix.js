@@ -3875,17 +3875,19 @@
        * @returns string
        */
 
-      function extractItems(str, max_quality = '2160') {
-          if (typeof(str) !== "string") return [];
-          // console.log('max_quality', max_quality, 'str', str);
+      function parseFiles(files, max_quality = '2160') {
+          // console.log('max_quality', max_quality, 'files', files);
+          if (typeof(files) !== "string") return [];
           try {
-            var items = str.split(',').map(function (item) {
+            var items = files.split(',').map(function (item) {
+              var file = item.replace(/\[\d+\D?\]/, '');
+              if (file.indexOf(':hls:') != -1) file = file.split(':hls:').shift();
               return {
                 quality: parseInt(item.match(/\[(\d+)\D?\]/)[1]),
-                file: /*'http:' +*/ item.replace(/\[\d+\D?\]/, '').split(':hls:').shift() || /*'http:' +*/ item.replace(/\[\d+\D?\]/, ''),
+                file: file,
               };
             }).filter(function (item) {
-              return true; //item.quality <= max_quality;
+              return item.quality <= parseInt(max_quality);
             });
             items.sort(function (a, b) {
               return a.quality - b.quality;
@@ -3901,11 +3903,11 @@
         // console.log('element', element);
 
         var preferably = parseInt(Lampa.Storage.get('video_quality_default', '2160'));
-        var qualities = extractItems(element);
+        var qualities = parseFiles(element);
         qualities.forEach(function (item) {
           if (parseInt(item.quality) <= parseInt(preferably)) {
-            quality[item.quality+'p'] = item.file;
-            file = item.file;
+            quality[item.quality+'p'] = item.file.replace(/\/\d+.m3u8/, '/'+item.quality+'.mp4');
+            file = quality[item.quality+'p'];
           }
         });
 
@@ -3963,12 +3965,12 @@
               t.folder.forEach(function (se) {
                 se.folder.forEach(function (eps) {
                   if (eps.title == filter_items.voice[choice.voice]) {
-                    var quality = extractItems(eps.file);
+                    var quality = parseFiles(eps.file);
                     filtred.push({
                       file: eps.file,
                       episode: parseInt(se.title.match(/\d+/)),
                       season: parseInt(t.title.match(/\d+/)),
-                      quality: (quality.length > 0 ? quality.pop().quality + 'p' : ''),
+                      quality: (quality.length > 0 ? quality.slice(-1).pop().quality + 'p' : ''),
                       info: ' / ' + Lampa.Utils.shortText(eps.title, 50)
                     });
                   }
@@ -3978,11 +3980,11 @@
           });
         } else {
           extract.forEach(function (data) {
-            var quality = extractItems(data.file);
+            var quality = parseFiles(data.file);
             filtred.push({
               file: data.file,
               title: data.title,
-              quality: (quality.length > 0 ? quality.pop().quality + 'p' : ''),
+              quality: (quality.length > 0 ? quality.slice(-1).pop().quality + 'p' : ''),
               info: '',
               subtitles: data.subtitle ? data.subtitle.split(',').map(function (c) {
                 return {
