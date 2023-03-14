@@ -5339,10 +5339,10 @@
         };
 
         var letgo_new = function letgo_new(tmdb_id) {
-          if ((object.movie.source == 'tmdb' || object.movie.source == 'cub') &&  balanser != 'videocdn'){
+          // sources[balanser].search(object, 0); return;
+          if ((object.movie.source == 'tmdb' || object.movie.source == 'cub') && balanser != 'videocdn') {
             network["native"](backendhost+'/lampa/kinopoiskId?v=333&tmdb_id=' + object.movie.id +'&serial=' + (object.movie.number_of_seasons ? 1 : 0) + '&title=' + encodeURIComponent(object.search), function (kinopoisk_id) {
                 // console.log('object.movie.id', object.movie.id, 'kinopoisk_id', kinopoisk_id);
-                // sources[balanser].search(object, 0); return;
                 if (kinopoisk_id) {
                     object.kinopoisk_id = kinopoisk_id;
                     sources[balanser].search(object, kinopoisk_id);
@@ -5353,7 +5353,12 @@
               }, pillow.bind(_this2), false, { dataType: 'text' }
             );
           } else {
-            // ???
+            if (object.kinopoisk_id) {
+                sources[balanser].search(object, object.kinopoisk_id);
+            } else if (balanser == 'HDRezka' || balanser == 'ZetFlix' || balanser == 'HDVB' || balanser == 'Bazon') {
+                sources[balanser].search(object, 0);
+            }
+            else pillow();
           }
         };
 
@@ -5361,7 +5366,8 @@
         network.timeout(1000 * 15);
 
         if (object.search_new) { object.search_new = false; object.filmix_id = undefined; object.kinopoisk_id = undefined; }
-        if (object.movie.source != 'tmdb' && object.movie && object.movie.kinopoisk_id) object.kinopoisk_id = object.movie.kinopoisk_id;
+        if (object.movie && object.movie.source != 'tmdb' && object.movie.kinopoisk_id) object.kinopoisk_id = object.movie.kinopoisk_id;
+        if (object.movie && object.movie.source == 'filmix' && object.movie.id) object.filmix_id = object.movie.id;
 
         if (balanser == 'Filmix') {
             _this2.extendChoice();
@@ -5369,7 +5375,7 @@
         } else if (balanser == 'Kinobase') {
             _this2.extendChoice();
             sources[balanser].search(object, object.search);
-        } else if ((object.movie.source == 'tmdb' || object.movie.source == 'cub') && balanser != 'videocdn') {
+        } else if (/*(object.movie.source == 'tmdb' || object.movie.source == 'cub') &&*/ balanser != 'videocdn') {
             _this2.extendChoice();
             if (object.kinopoisk_id) {
                 sources[balanser].search(object, object.kinopoisk_id);
