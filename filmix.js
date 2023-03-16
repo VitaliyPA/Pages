@@ -1386,7 +1386,7 @@
         } else {
 
           var url = backend;
-          url += '&id=' + object.movie.id + '&kinopoisk_id=' + (object.kinopoisk_id || results[element.translation].kinopoisk_id) + '&translation=' + results[element.translation].translator_id;
+          url += '&id=' + object.movie.id + '&kinopoisk_id=' + (results[element.translation].kinopoisk_id || object.kinopoisk_id) + '&translation=' + results[element.translation].translator_id;
           if (element.season != undefined) url += '&season=' + element.season + '&episode=' + element.episode;
           url += '&link=' + element.link;
           network.clear();
