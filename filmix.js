@@ -1,6 +1,6 @@
 (function () {
     'use strict';
-    var backendhost = 'http://back.freebie.tom.ru'; backendhost = 'http://192.168.1.100:3333';
+    var backendhost = 'http://back.freebie.tom.ru'; //backendhost = 'http://192.168.1.100:3333';
 
     function Filmix(component, _object) {
       var network = new Lampa.Reguest();
