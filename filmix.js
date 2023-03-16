@@ -1,6 +1,6 @@
 (function () {
     'use strict';
-    var backendhost = 'http://back.freebie.tom.ru'; //backendhost = 'http://192.168.1.100:3333';
+    var backendhost = 'http://back.freebie.tom.ru'; backendhost = 'http://192.168.1.100:3333';
 
     function Filmix(component, _object) {
       var network = new Lampa.Reguest();
@@ -1378,9 +1378,9 @@
         // console.log('element', element);
         if (element.link.startsWith('http') && (element.link.substr(-5) === ".m3u8" || element.link.substr(-4) === ".mp4")) {
 
-            if ( results[element.translation].serial == 0 &&  Object.keys(results[element.translation].playlists).length > 1)
+            if ( results[element.translation].serial == 0 &&  Object.keys(results[element.translation].playlists).length > 0)
                 return call(element);
-            if ( results[element.translation].serial == 1 &&  Object.keys(results[element.translation].playlists[ element.season ][ element.episode ]).length > 1)
+            if ( results[element.translation].serial == 1 &&  Object.keys(results[element.translation].playlists[ element.season ][ element.episode ]).length > 0)
                 return call(element);
 
         } else {
@@ -6011,7 +6011,7 @@
                       season: episode.season,
                       title: episode.episode + (episode.title ? ' - ' + episode.title : ''),
                       // quality: (episode.qualities.length > 1 ? episode.quality+'p' : results[keyt].quality ),
-                      quality: (episode.qualities.length > 1 ? episode.quality+'p' : '' ),
+                      quality: (episode.qualities.length > 1 || (episode.qualities.length == 1 && episode.qualities.slice(-1) == 0) ? episode.quality+'p' : '' ),
                       translation: episode.translation
                     });
                   }
@@ -6022,7 +6022,7 @@
             filtred.push({
               title: translation.translation,
               // quality: (translation.qualities.length > 1 ? translation.quality+'p' : results[keyt].quality ),
-              quality: (translation.qualities.length > 1 ? translation.quality+'p' : '' ),
+              quality: (translation.qualities.length > 1 || (episode.qualities.length == 1 && episode.qualities.slice(-1) == 0) ? translation.quality+'p' : '' ),
               translation: keyt,
               subtitles: parseSubtitles(translation.subtitles),
             });
