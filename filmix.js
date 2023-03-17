@@ -6022,7 +6022,7 @@
             filtred.push({
               title: translation.translation,
               // quality: (translation.qualities.length > 1 ? translation.quality+'p' : results[keyt].quality ),
-              quality: (translation.qualities.length > 1 || (episode.qualities.length == 1 && episode.qualities.slice(-1) == 0) ? translation.quality+'p' : '' ),
+              quality: (translation.qualities.length > 1 || (translation.qualities.length == 1 && translation.qualities.slice(-1) == 0) ? translation.quality+'p' : '' ),
               translation: keyt,
               subtitles: parseSubtitles(translation.subtitles),
             });
