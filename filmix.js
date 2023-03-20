@@ -953,7 +953,7 @@
                     ex = getFile(elem, elem.quality);
                   } else {
                     var url = backend + '&id=' + object.movie.id + '&kinopoisk_id=' + (object.kinopoisk_id || 0) + '&next=true' + '&translation=' + elem.translation;
-                    url += '&season=' + elem.season + '&episode=' + elem.episode + '&link=' + results[elem.translation].link + '&favs=' + results[elem.translation].favs + '&name='+'/S' + elem.season + '-E' + elem.episode + '.html';
+                    url += '&season=' + elem.season + '&episode=' + elem.episode + '&link=' + results[elem.translation].link + '&favs=' + results[elem.translation].favs + '&name='+'/S' + elem.season + '-E' + elem.episode + '.m3u8';
                     ex = { file: url };
                   }
                   playlist.push({
@@ -1283,7 +1283,7 @@
                     ex = getFile(elem, elem.quality);
                   } else {
                     var url = backend + '&id=' + object.movie.id + '&kinopoisk_id=' + (object.kinopoisk_id || 0) + '&next=true' + '&translation=' + results[elem.translation].translator_id;
-                    url += '&season=' + elem.season + '&episode=' + elem.episode + '&link=' + elem.link + '&name='+'/S' + elem.season + '-E' + elem.episode + '.html';
+                    url += '&season=' + elem.season + '&episode=' + elem.episode + '&link=' + elem.link + '&name='+'/S' + elem.season + '-E' + elem.episode + '.m3u8';
                     ex = { file: url };
                   }
                   playlist.push({
