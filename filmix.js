@@ -254,11 +254,11 @@
                 if (match) movie.link = movie.link.replace(match[1], window.filmix.hash);
             }
 
-            var qualities = movie.link.match(/.+\[(.+[\d]),?,?\].+/i);
+            var qualities = movie.link.match(/.+\[(.+[\d]),*\].+/i);
             if (qualities) qualities = qualities[1].split(",").filter( function (elem) { return parseInt(elem) <= window.filmix.max_qualitie && parseInt(elem) !== 0 }).
                 sort(function(a, b) { if (parseInt(a) > parseInt(b)) return 1; else if (parseInt(a) < parseInt(b)) return -1; else return 0; });
-            var qualitie = Math.max.apply(null, qualities);
-            var link = movie.link.replace(/\[(.+[\d]),?\]/i, qualitie);
+            var qualitie = (qualities.length > 0 ? Math.max.apply(null, qualities) : 0);
+            var link = movie.link.replace(/\[(.+[\d]),*\]/i, qualitie);
 
             extract[translation] = { json : {}, "file": link, translation : movie.translation, "quality": qualitie, "qualities": qualities };
           })
@@ -401,7 +401,7 @@
 
             var select_quality = parseInt(filter_items.quality[filter_data.quality]);
             var qualities = movie.qualities.filter( function (elem) { return parseInt(elem) <= select_quality });
-            var qualitie = Math.max.apply(null, qualities);
+            var qualitie = (qualities.length > 0 ? Math.max.apply(null, qualities) : 0);
             if (qualitie) {
               filtred.push({
                 title: movie.translation,
