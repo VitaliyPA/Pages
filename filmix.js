@@ -5186,7 +5186,7 @@
         source: Lampa.Lang.translate('settings_rest_source'),
         quality: Lampa.Lang.translate('torrent_parser_quality'),
       };
-      var filter_sources = ['Filmix', /*'HDRezka',*/ 'HDVB', 'CDNMovies', 'Alloha', /*'VideoDB', 'ZetFlix', 'Bazon', 'Kinobase', 'Kodik',*/ /*'IFrame',*/ ];
+      var filter_sources = ['Filmix', /*'HDRezka',*/ /*'HDVB',*/ 'CDNMovies', /*'Alloha',*/ /*'VideoDB', 'ZetFlix', 'Bazon', 'Kinobase', 'Kodik',*/ /*'IFrame',*/ ];
 
       if (filter_sources.indexOf(balanser) == -1) {
         balanser = 'Filmix';
