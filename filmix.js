@@ -2448,7 +2448,7 @@
         source: Lampa.Lang.translate('settings_rest_source'),
         quality: Lampa.Lang.translate('torrent_parser_quality'),
       };
-      var filter_sources = ["Filmix", /*"HDRezka",*/ "HDVB", "Alloha", "CDNMovies", /*"KinoVOD", "VideoDB", "ZetFlix", "Bazon",*/ "Kinobase", "Kodik", ];
+      var filter_sources = ["Filmix", /*"HDRezka", "HDVB",*/ "Alloha", "CDNMovies", /*"KinoVOD", "VideoDB", "ZetFlix", "Bazon", "Kinobase", "Kodik",*/ ];
 
       if (filter_sources.indexOf(balanser) == -1) {
         balanser = 'Filmix';
@@ -2701,6 +2701,10 @@
 
           _this3.append(item);
         });
+
+        var last_views = scroll.render().find('.selector.online').find('.torrent-item__viewed').parent().last();
+        if (object.movie.number_of_seasons && last_views.length) last = last_views.eq(0)[0]; else last = scroll.render().find('.selector').eq(3)[0];
+
       };
       /**
        * Очистить список файлов
@@ -3018,10 +3022,10 @@
             Navigator.move('down');
           },
           right: function right() {
-            if (Navigator.canmove('right')) Navigator.move('right');else filter.show(Lampa.Lang.translate('title_filter'), 'filter');
+            if (Navigator.canmove('right')) Navigator.move('right'); else filter.show(Lampa.Lang.translate('title_filter'), 'filter');
           },
           left: function left() {
-            if (Navigator.canmove('left')) Navigator.move('left');else Lampa.Controller.toggle('menu');
+            if (Navigator.canmove('left')) Navigator.move('left'); else Lampa.Controller.toggle('menu');
           },
           back: this.back
         });
@@ -3269,14 +3273,16 @@
       });
 
       function addSettingsFilmix() {
+        Lampa.Settings.main().render().find('[data-component="filmix"]').remove();
         if (Lampa.Settings.main && !Lampa.Settings.main().render().find('[data-component="filmix"]').length) {
           var field = $("<div class=\"settings-folder selector\" data-component=\"filmix\">\n                <div class=\"settings-folder__icon\">\n                    <svg height=\"57\" viewBox=\"0 0 58 57\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n                    <path d=\"M20 20.3735V45H26.8281V34.1262H36.724V26.9806H26.8281V24.3916C26.8281 21.5955 28.9062 19.835 31.1823 19.835H39V13H26.8281C23.6615 13 20 15.4854 20 20.3735Z\" fill=\"white\"/>\n                    <rect x=\"2\" y=\"2\" width=\"54\" height=\"53\" rx=\"5\" stroke=\"white\" stroke-width=\"4\"/>\n                    </svg>\n                </div>\n                <div class=\"settings-folder__name\">Filmix</div>\n            </div>");
-          Lampa.Settings.main().render().find('[data-component="more"]').after(field);
+          // Lampa.Settings.main().render().find('[data-component="more"]').after(field);
+          Lampa.Settings.main().render().find('[data-component="more"]').last().after(field);
           Lampa.Settings.main().update();
         }
       }
 
-      if (window.appready) addSettingsFilmix();else {
+      if (window.appready) addSettingsFilmix(); else {
         Lampa.Listener.follow('app', function (e) {
           if (e.type == 'ready') addSettingsFilmix();
         });
@@ -3328,6 +3334,7 @@
           });
           showStatus();
         }
+        setTimeout(function () { Lampa.Settings.main().render().find('[data-component="filmix"]').removeClass('hide'); }, 0.1 * 1000);
       });
 
       function showStatus() {
