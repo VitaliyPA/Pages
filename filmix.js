@@ -2181,7 +2181,7 @@
               var match = item.match(/\[(\d+)\D?\]/);
               if (!match) match = item.match(/\/(\d+)[^\/]*\.m3u8/);
               return {
-                quality: match[1],
+                quality: parseInt(match[1]),
                 file: file,
               };
             }).filter(function (item) {
