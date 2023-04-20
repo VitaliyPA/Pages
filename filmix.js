@@ -2178,8 +2178,10 @@
             var items = files.split(',').map(function (item) {
               var file = item.replace(/\[\d+\D?\]/, '');
               if (file.indexOf(':hls:') != -1) file = file.split(':hls:').shift();
+              var match = item.match(/\[(\d+)\D?\]/);
+              if (!match) match = item.match(/\/(\d+)[^\/]*\.m3u8/);
               return {
-                quality: parseInt(item.match(/\[(\d+)\D?\]/)[1]),
+                quality: match[1],
                 file: file,
               };
             }).filter(function (item) {
