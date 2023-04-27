@@ -1056,7 +1056,7 @@
                 if (elem.link.startsWith('http') && (elem.link.substr(-5) === ".m3u8" || elem.link.substr(-4) === ".mp4")) {
                   ex = _this.getFile(elem, elem.quality);
                 } else {
-                  var url = _this.getStreamLink(element, true);
+                  var url = _this.getStreamLink(elem, true);
                   ex = { file: url };
                 }
                 playlist.push({
@@ -1131,42 +1131,42 @@
         // console.log('element', element);
         if (element.link.startsWith('http') && (element.link.substr(-5) === ".m3u8" || element.link.substr(-4) === ".mp4")) {
 
-            if ( results[element.translation].serial == 0 &&  Lampa.Arrays.getKeys(results[element.translation].playlists).length > 0)
-                return call(element);
-            if ( results[element.translation].serial == 1 &&  Lampa.Arrays.getKeys(results[element.translation].playlists[ element.season ][ element.episode ]).length > 0)
-                return call(element);
+          if ( results[element.translation].serial == 0 &&  Lampa.Arrays.getKeys(results[element.translation].playlists).length > 0)
+            return call(element);
+          if ( results[element.translation].serial == 1 &&  Lampa.Arrays.getKeys(results[element.translation].playlists[ element.season ][ element.episode ]).length > 0)
+            return call(element);
 
         } else {
 
           var url = this.getStreamLink(element, false);
           this.network.clear(); this.network.timeout(15000);
           this.network.silent( url, function (str) {
-              // console.log('str', str);
+            // console.log('str', str);
 
-              var json = Lampa.Arrays.decodeJson(str, undefined);
-              if (str == undefined) { return error(Lampa.Lang.translate('online_nolink')); }
-              else if (json == undefined) { return error(str); }
-              else if (json && json.error) { return error(json.error); }
-              else if (json.playlists && Lampa.Arrays.getKeys(json.playlists).length === 0) return error(Lampa.Lang.translate('online_nolink'));
+            var json = Lampa.Arrays.decodeJson(str, undefined);
+            if (str == undefined) { return error(Lampa.Lang.translate('online_nolink')); }
+            else if (json == undefined) { return error(str); }
+            else if (json && json.error) { return error(json.error); }
+            else if (json.playlists && Lampa.Arrays.getKeys(json.playlists).length === 0) return error(Lampa.Lang.translate('online_nolink'));
 
-              var result = results[element.translation];
-              if (result.serial == 1) {
-                  result.playlists[ element.season ][ element.episode ] = json.playlists;
-                  result.subtitles[ element.season+'_'+element.episode ] = json.subtitles;
-                  _this.success(results);
-                  element.link = extract[element.translation].json[ element.season ].folder[ element.episode ].file;
-                  element.quality = extract[element.translation].json[ element.season ].folder[ element.episode ].quality;
-                  element.subtitles = _this.parseSubtitles(json.subtitles);
-                  return call(element);
-              } else {
-                  result.playlists = json.playlists;
-                  result.subtitles = json.subtitles;
-                  _this.success(results);
-                  element.link = extract[element.translation].file;
-                  element.quality = extract[element.translation].quality;
-                  element.subtitles = _this.parseSubtitles(json.subtitles);
-                  return call(element);
-              }
+            var result = results[element.translation];
+            if (result.serial == 1) {
+              result.playlists[ element.season ][ element.episode ] = json.playlists;
+              result.subtitles[ element.season+'_'+element.episode ] = json.subtitles;
+              _this.success(results);
+              element.link = extract[element.translation].json[ element.season ].folder[ element.episode ].file;
+              element.quality = extract[element.translation].json[ element.season ].folder[ element.episode ].quality;
+              element.subtitles = _this.parseSubtitles(json.subtitles);
+              return call(element);
+            } else {
+              result.playlists = json.playlists;
+              result.subtitles = json.subtitles;
+              _this.success(results);
+              element.link = extract[element.translation].file;
+              element.quality = extract[element.translation].quality;
+              element.subtitles = _this.parseSubtitles(json.subtitles);
+              return call(element);
+            }
 
           }, function (a, c) {
               return error(_this.network.errorDecode(a, c));
