@@ -982,7 +982,6 @@
               }
 
               element.loading = false;
-              if (element.subtitles && Lampa.Player.subtitles) Lampa.Player.subtitles(element.subtitles);
 
               if (viewed.indexOf(hash_file) == -1) {
                 viewed.push(hash_file);
@@ -1048,50 +1047,39 @@
               subtitles: element.subtitles,
             };
 
-            if (_this.android && element.season != undefined && Lampa.Platform.version && Lampa.Platform.is('android') && Lampa.Storage.field('player') == 'android') {
+            if (element.season != undefined && Lampa.Platform.version) {
               var playlist = [];
               items.forEach(function (elem) {
-                elem.link = _this.extract[elem.translation].json[elem.season].folder[elem.episode].file;
-                var ex;
+
+                elem.link = _this.extract[elem.translation].json[elem.season].folder[elem.episode].file;              
                 if (elem.link.startsWith('http') && (elem.link.substr(-5) === ".m3u8" || elem.link.substr(-4) === ".mp4")) {
-                  ex = _this.getFile(elem, elem.quality);
+                  var ex = _this.getFile(elem, elem.quality);
+                  var cell = { url: ex.file, quality: ex.quality };
+                } else if (_this.android && Lampa.Platform.is('android') && Lampa.Storage.field('player') == 'android') {
+                  var cell = { url: _this.getStreamLink(elem, true) };
                 } else {
-                  var url = _this.getStreamLink(elem, true);
-                  ex = { file: url };
+                  var cell = { 
+                    url: function url(call) {
+                      url: _this.getStream(elem, function (extra) {
+                        extra = _this.getFile(extra, extra.quality);
+                        cell.url = extra.file;
+                        cell.quality = extra.quality;
+                        call();
+                      }, function () {
+                        cell.url = '';
+                        call();
+                      });
+                    }
+                  };
                 }
-                playlist.push({
-                  url: ex.file,
-                  quality: ex.quality,
-                  timeline: elem.timeline,
-                  title: elem.title,
-                  subtitles: elem.subtitles,
-                });
-              });
-              if (playlist.length > 1) first.playlist = playlist;
-              Lampa.Player.play(first);
-              Lampa.Player.playlist(playlist);
-            } else if (element.season != undefined && Lampa.Platform.version) {
-              var playlist = [];
-              items.forEach(function (elem) {
-                var cell = {
-                  url: function url(call) {
-                    _this.getStream(elem, function (extra) {
-                      extra = _this.getFile(extra, extra.quality);
-                      cell.url = extra.file;
-                      cell.quality = extra.quality;
-                      call();
-                    }, function () {
-                      cell.url = '';
-                      call();
-                    });
-                  },
-                  timeline: elem.timeline,
-                  title: elem.title,
-                  subtitles: elem.subtitles,
-                };
+                cell.timeline = elem.timeline;
+                cell.title = elem.title;
+                cell.subtitles = elem.subtitles;
+
                 if (elem == element) cell.url = extra.file;
                 playlist.push(cell);
               });
+              if (playlist.length > 1 && Lampa.Platform.is('android') && Lampa.Storage.field('player') == 'android') first.playlist = playlist;
               Lampa.Player.play(first);
               Lampa.Player.playlist(playlist);
             } else {
@@ -1099,7 +1087,6 @@
               Lampa.Player.playlist([first]);
             }
 
-            if (element.subtitles && Lampa.Player.subtitles) Lampa.Player.subtitles(element.subtitles);
             element.loading = false;
 
             if (viewed.indexOf(hash_file) == -1) {
@@ -1339,8 +1326,6 @@
           this.network["native"]( element.link, function (found) {
             // console.log('found', found);
 
-            function lzw_encode(c){var x='charCodeAt',b,e={},f=c.split(""),d=[],a=f[0],g=256;for(b=1;b<f.length;b++)c=f[b],null!=e[a+c]?a+=c:(d.push(1<a.length?e[a]:a[x](0)),e[a+c]=g,g++,a=c);d.push(1<a.length?e[a]:a[x](0));for(b=0;b<d.length;b++)d[b]=String.fromCharCode(d[b]);return d.join("")};
-
             _this.network.clear(); _this.network.timeout(15000);
             _this.network.silent( url, function (str) {
               // console.log('str', str);
@@ -1374,7 +1359,7 @@
             }, function (a, c) {
               return error(_this.network.errorDecode(a, c));
             },
-              lzw_encode(found), { dataType: 'text' }
+              component.LZString.compressToBase64(found), { dataType: 'text' }
             );
 
           }, function (a, c) {
@@ -1460,7 +1445,7 @@
       Balanser.call(this, component, _object);
       this.backend = backendhost+'/lampa/kinovodurl?v=777';
       this.search_base = this.search;
-
+  
       /**
        * Поиск
        * @param {Object} _object
@@ -1469,11 +1454,100 @@
         // console.log('kinopoisk_id', kinopoisk_id, 'similar', similar, 'window.whois', window.whois);
         if (!window.whois) { component.whois(_object, kinopoisk_id, similar, this.network); component.loading(false); return; } 
         else if (!window.whois && !window.whois.ip) { component.empty('ip не определен'); return; }
+        else if (window.whois && window.whois.ip && window.whois.ip.startsWith('192.168.') == false) { this.append_ext = this.append_call; this.getStream = this.getStream_ext; }
         else if (window.whois && window.whois.ip && window.whois.ip.startsWith('192.168.') == false) { component.empty('привязка по ip, работает только в локальной сети'); return; }
 
         this.search_base(_object, kinopoisk_id, similar);
       }
-      
+   
+      this.getStreamLink = function (element, android) {
+        var kp_id = (this.results[element.translation].kinopoisk_id || this.object.kinopoisk_id || 0);
+        var url = this.backend + '&source=' + this.object.movie.source + '&id=' + this.object.movie.id + '&kinopoisk_id=' + kp_id;
+        url += '&filmId=' + this.object.balanser_id + '&title=' + encodeURIComponent(this.object.search);
+        return url;
+      }
+
+      this.getStream_ext = function (element, call, error) {
+        var _this = this, object = this.object, results = this.results, extract = this.extract;
+        if (element.season != undefined) 
+          element.link = extract[element.translation].json[element.season].folder[element.episode].file;
+        else element.link = extract[element.translation].file;
+
+        // console.log('element', element);
+        if (results[element.translation].extend == undefined && element.link.startsWith('http') && (element.link.substr(-5) === ".m3u8" || element.link.substr(-4) === ".mp4")) {
+
+          if ( results[element.translation].serial == 0 &&  Lampa.Arrays.getKeys(results[element.translation].playlists).length > 0)
+            return call(element);
+          if ( results[element.translation].serial == 1 &&  Lampa.Arrays.getKeys(results[element.translation].playlists[ element.season ][ element.episode ]).length > 0)
+            return call(element);
+
+        } else {
+
+          // var url = this.getStreamLink(element, false);
+          var extend = results[element.translation].extend;
+          this.network.clear(); this.network.timeout(10000);
+          this.network["native"]( extend.url, function (str) {
+            // console.log('str', str);
+            var func_user_data = new Function(str.replace('eval', ' var func_user_data=')+';return func_user_data;');
+            var html = func_user_data().toString();
+            // console.log('html', html);
+
+            var match = html.match(/_vod_time\s*=\s*"\s*(\d+)\s*"\s*;/);
+            if (match) extend.vod_time = match[1];
+            match = html.match(/_vod_hash\s*=\s*"\s*([^"]+)\s*"\s*;/);
+            if (match) extend.vod_hash = match[1];
+            // console.log('extend', extend);
+
+            if (extend.id == undefined || extend.identifer == undefined || extend.vod_hash == undefined) {
+                match = html.match(/>(.*?недоступен.*?)</);
+                if (match) error(match[1]);
+            }
+
+            extend.url2 = extend.url.split('user_data.js').shift() + 'vod/' + extend.id + '?identifier=' + extend.identifer + '&player_type=new&file_type=mp4&st=' + extend.vod_hash + '&e=' + extend.vod_time + '&_=' + Date.now();
+            _this.network.clear(); _this.network.timeout(10000);
+            _this.network["native"]( extend.url2, function (found) {
+              // console.log('found', found);
+
+              _this.network.clear(); _this.network.timeout(15000);
+              _this.network.silent( _this.getStreamLink(element), function (str) {
+                // console.log('str', str);
+
+                var found = Lampa.Arrays.decodeJson(str, undefined);
+                if (found && found.result) {
+                  if (found.action === 'select') {                    
+                    return error('select');
+                  } else if (found.action === 'done') {
+                    _this.results = (typeof(found.data) === "string" ? JSON.parse(found.data) : found.data);
+                    object.balanser_id = found.balanser_id || found.kpid;
+                    //console.log('results', results);
+                    if (_this.results.length > 0) _this.success(_this.results);
+                    return call(element);
+                  }
+                }
+                else if (found && found.error) { return error(found.error); }
+                else return error(Lampa.Lang.translate('online_nolink'));
+
+              }, function (a, c) {
+                return error(_this.network.errorDecode(a, c));
+              },
+                component.LZString.compressToBase64(found), { dataType: 'text' }
+              );
+
+            }, function (a, c) {
+                return error(_this.network.errorDecode(a, c));
+            },
+                false, { dataType: 'text' }
+            );
+
+          }, function (a, c) {
+              return error(_this.network.errorDecode(a, c));
+          },
+              false, { dataType: 'text' }
+          );
+
+        };
+      };
+
     };
 
     function Kinobase(component, _object) {
@@ -2156,7 +2230,7 @@
         quality: Lampa.Lang.translate('torrent_parser_quality'),
       };
 
-      var filter_sources = ["Filmix", /*"HDRezka", "HDVB",*/ "Alloha", /*"KinoVOD", "VideoDB", "Bazon",*/ "VideoCDN", /*"ZetFlix",*/ "CDNMovies", /*"Kinobase", "Kodik",*/ ];
+      var filter_sources = ["Filmix", /*"HDRezka", "HDVB",*/ "Alloha", /*"Bazon", "ZetFlix",*/ "KinoVOD", /*"VideoDB",*/ "VideoCDN", "CDNMovies", /*"Kinobase", "Kodik",*/ ];
 
       var balanser_default = filter_sources.slice(0,1).pop();
       var balanser = Lampa.Storage.get('online_balanser', balanser_default);
@@ -2817,6 +2891,8 @@
           sources[balanser].search(object, kinopoisk_id, similar);
         });
       };
+
+      this.LZString = function() {var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",n="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",e={};function t(r,o){if(!e[r]){e[r]={};for(var n=0;n<r.length;n++)e[r][r.charAt(n)]=n}return e[r][o]}var i={compressToBase64:function(r){if(null==r)return"";var n=i._compress(r,6,function(r){return o.charAt(r)});switch(n.length%4){default:case 0:return n;case 1:return n+"===";case 2:return n+"==";case 3:return n+"="}},decompressFromBase64:function(r){return null==r?"":""==r?null:i._decompress(r.length,32,function(n){return t(o,r.charAt(n))})},compressToUTF16:function(o){return null==o?"":i._compress(o,15,function(o){return r(o+32)})+" "},decompressFromUTF16:function(r){return null==r?"":""==r?null:i._decompress(r.length,16384,function(o){return r.charCodeAt(o)-32})},compressToUint8Array:function(r){for(var o=i.compress(r),n=new Uint8Array(2*o.length),e=0,t=o.length;e<t;e++){var s=o.charCodeAt(e);n[2*e]=s>>>8,n[2*e+1]=s%256}return n},decompressFromUint8Array:function(o){if(null==o)return i.decompress(o);for(var n=new Array(o.length/2),e=0,t=n.length;e<t;e++)n[e]=256*o[2*e]+o[2*e+1];var s=[];return n.forEach(function(o){s.push(r(o))}),i.decompress(s.join(""))},compressToEncodedURIComponent:function(r){return null==r?"":i._compress(r,6,function(r){return n.charAt(r)})},decompressFromEncodedURIComponent:function(r){return null==r?"":""==r?null:(r=r.replace(/ /g,"+"),i._decompress(r.length,32,function(o){return t(n,r.charAt(o))}))},compress:function(o){return i._compress(o,16,function(o){return r(o)})},_compress:function(r,o,n){if(null==r)return"";var e,t,i,s={},u={},a="",p="",c="",l=2,f=3,h=2,d=[],m=0,v=0;for(i=0;i<r.length;i+=1)if(a=r.charAt(i),Object.prototype.hasOwnProperty.call(s,a)||(s[a]=f++,u[a]=!0),p=c+a,Object.prototype.hasOwnProperty.call(s,p))c=p;else{if(Object.prototype.hasOwnProperty.call(u,c)){if(c.charCodeAt(0)<256){for(e=0;e<h;e++)m<<=1,v==o-1?(v=0,d.push(n(m)),m=0):v++;for(t=c.charCodeAt(0),e=0;e<8;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;e<h;e++)m=m<<1|t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=c.charCodeAt(0),e=0;e<16;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}0==--l&&(l=Math.pow(2,h),h++),delete u[c]}else for(t=s[c],e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;0==--l&&(l=Math.pow(2,h),h++),s[p]=f++,c=String(a)}if(""!==c){if(Object.prototype.hasOwnProperty.call(u,c)){if(c.charCodeAt(0)<256){for(e=0;e<h;e++)m<<=1,v==o-1?(v=0,d.push(n(m)),m=0):v++;for(t=c.charCodeAt(0),e=0;e<8;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;e<h;e++)m=m<<1|t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=c.charCodeAt(0),e=0;e<16;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}0==--l&&(l=Math.pow(2,h),h++),delete u[c]}else for(t=s[c],e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;0==--l&&(l=Math.pow(2,h),h++)}for(t=2,e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;for(;;){if(m<<=1,v==o-1){d.push(n(m));break}v++}return d.join("")},decompress:function(r){return null==r?"":""==r?null:i._decompress(r.length,32768,function(o){return r.charCodeAt(o)})},_decompress:function(o,n,e){var t,i,s,u,a,p,c,l=[],f=4,h=4,d=3,m="",v=[],g={val:e(0),position:n,index:1};for(t=0;t<3;t+=1)l[t]=t;for(s=0,a=Math.pow(2,2),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;switch(s){case 0:for(s=0,a=Math.pow(2,8),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;c=r(s);break;case 1:for(s=0,a=Math.pow(2,16),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;c=r(s);break;case 2:return""}for(l[3]=c,i=c,v.push(c);;){if(g.index>o)return"";for(s=0,a=Math.pow(2,d),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;switch(c=s){case 0:for(s=0,a=Math.pow(2,8),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;l[h++]=r(s),c=h-1,f--;break;case 1:for(s=0,a=Math.pow(2,16),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;l[h++]=r(s),c=h-1,f--;break;case 2:return v.join("")}if(0==f&&(f=Math.pow(2,d),d++),l[c])m=l[c];else{if(c!==h)return null;m=i+i.charAt(0)}v.push(m),l[h++]=i+m.charAt(0),i=m,0==--f&&(f=Math.pow(2,d),d++)}}};return i}();"function"==typeof define&&define.amd?define(function(){return LZString}):"undefined"!=typeof module&&null!=module?module.exports=LZString:"undefined"!=typeof angular&&null!=angular&&angular.module("LZString",[]).factory("LZString",function(){return LZString});
 
       this.getEpisodes = function (_object, component, network, season, call) {
         object = _object;
