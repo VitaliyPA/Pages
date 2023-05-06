@@ -1214,7 +1214,7 @@
 
       Balanser.call(this, component, _object);
       this.balanser = 'HDRezka';
-      this.backend = backendhost+'/lampa/hdrezkaurl?v=777';
+      this.backend = backendhost+'/lampa/hdrezkaurl?v=222';
 
       this.android = true;
       this.append_ext = this.append_call;
@@ -1269,7 +1269,7 @@
     function HDVB(component, _object) {
 
       Balanser.call(this, component, _object);
-      this.backend = backendhost+'/lampa/hdvburl?v=777';
+      this.backend = backendhost+'/lampa/hdvburl?v=222';
 
       this.android = true;
       this.append_ext = this.append_call;
@@ -1292,7 +1292,7 @@
     function Alloha(component, _object) {
 
       Balanser.call(this, component, _object);
-      this.backend = backendhost+'/lampa/allohaurl?v=777';
+      this.backend = backendhost+'/lampa/allohaurl?v=222';
 
       this.android = false;
       this.append_ext = this.append_call;
@@ -1408,7 +1408,7 @@
     function VideoDB(component, _object) {
 
       Balanser.call(this, component, _object);
-      this.backend = backendhost+'/lampa/kinoplayurl?v=777';
+      this.backend = backendhost+'/lampa/kinoplayurl?v=222';
 
       /**
        * parse Subtitles
@@ -1436,14 +1436,14 @@
     function ZetFlix(component, _object) {
 
       Balanser.call(this, component, _object);
-      this.backend = backendhost+'/lampa/zetflixurl?v=777';
+      this.backend = backendhost+'/lampa/zetflixurl?v=222';
       
     };
 
     function KinoVOD(component, _object) {
 
       Balanser.call(this, component, _object);
-      this.backend = backendhost+'/lampa/kinovodurl?v=777';
+      this.backend = backendhost+'/lampa/kinovodurl?v=222';
       this.search_base = this.search;
   
       /**
@@ -1553,7 +1553,7 @@
     function Kinobase(component, _object) {
 
       Balanser.call(this, component, _object);
-      this.backend = backendhost+'/lampa/kinobaseurl?v=777';
+      this.backend = backendhost+'/lampa/kinobaseurl?v=222';
       this.search_base = this.search;
 
       /**
@@ -1574,14 +1574,14 @@
     function VideoCDN(component, _object) {
 
       Balanser.call(this, component, _object);
-      this.backend = backendhost+'/lampa/videocdnurl?v=777';
+      this.backend = backendhost+'/lampa/videocdnurl?v=222';
       
     };
 
     function Kodik(component, _object) {
 
       Balanser.call(this, component, _object);
-      this.backend = backendhost+'/lampa/kodikurl?v=777';
+      this.backend = backendhost+'/lampa/kodikurl?v=222';
 
       this.android = false;
       this.append_ext = this.append_call;
@@ -1604,7 +1604,7 @@
     function Bazon(component, _object) {
 
       Balanser.call(this, component, _object);
-      this.backend = backendhost+'/lampa/bazonurl?v=777';
+      this.backend = backendhost+'/lampa/bazonurl?v=222';
       this.hlsproxy = { use: false, link: 'http://back.freebie.tom.ru:8888/', extension: '.m3u8', hlsproxy : ['Off', 'On', 'On + api'] };
       
       this.success_show = 'Работает только во встроенном плеере или MX (для Android на 102+ версии). Иначе "Фильтр => HLSProxy => On"';
@@ -2431,7 +2431,7 @@
         var letgo_new = function letgo_new(tmdb_id) {
           // sources[balanser].search(object, 0); return;
           if ((object.movie.source == 'tmdb' || object.movie.source == 'cub') && balanser != 'videocdn') {
-            network["native"](backendhost+'/lampa/kinopoiskId?v=777&tmdb_id=' + object.movie.id +'&serial=' + (object.movie.number_of_seasons ? 1 : 0) + '&title=' + encodeURIComponent(object.search), function (kinopoisk_id) {
+            network["native"](backendhost+'/lampa/kinopoiskId?v=222&tmdb_id=' + object.movie.id +'&serial=' + (object.movie.number_of_seasons ? 1 : 0) + '&title=' + encodeURIComponent(object.search), function (kinopoisk_id) {
                 // console.log('object.movie.id', object.movie.id, 'kinopoisk_id', kinopoisk_id);
                 if (kinopoisk_id) {
                     object.kinopoisk_id = kinopoisk_id;
@@ -2884,7 +2884,7 @@
       this.whois = function (_object, kinopoisk_id, similar, network) {
         object = _object;
         window.whois = { ip : '127.0.0.1' };
-        network["native"](backendhost+'/lampa/whois?v=777&id=' + object.movie.id +'&title=' + encodeURI(object.search), function (json) {
+        network["native"](backendhost+'/lampa/whois?v=222&id=' + object.movie.id +'&title=' + encodeURI(object.search), function (json) {
           window.whois.ip = json.ip;
           sources[balanser].search(object, kinopoisk_id, similar);
       }, function (a, c) {
