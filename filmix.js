@@ -1322,8 +1322,9 @@
         } else {
           var url = this.backend + '&source=' + object.movie.source;          
           url += '&id=' + object.movie.id + '&kinopoisk_id=' + (results[element.translation].kinopoisk_id || object.kinopoisk_id || 0) + '&link=' + element.link;
-          this.network.clear(); this.network.timeout(15000);
-          this.network["native"]( element.link, function (found) {
+
+          this.network.clear(); this.network.timeout(10000);
+          this.network["native"]( element.link+'&nc=1', function (found) {
             // console.log('found', found);
 
             _this.network.clear(); _this.network.timeout(15000);
