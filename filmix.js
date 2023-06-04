@@ -1834,7 +1834,6 @@
       this.proxy = function (name) {
         var prox = Lampa.Storage.get('online_proxy_all');
         var need = Lampa.Storage.get('online_proxy_' + name);
-        if (name === 'kinobase') need = backendhost + '/proxy/';
         if (need) prox = need;
 
         if (prox && prox.slice(-1) !== '/') {
