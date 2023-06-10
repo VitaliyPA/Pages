@@ -1251,7 +1251,7 @@
           call();
         } else {
           this.results[voice].getEpisodes = true;
-          this.network.clear(); this.network.timeout(20000);
+          this.network.clear(); this.network.timeout(15000);
           var url = this.backend + '&source=' + object.movie.source + '&id=' + object.movie.id + '&kinopoisk_id=' + (this.results[voice].kinopoisk_id || object.kinopoisk_id || 0) + '&translation=' + this.results[voice].translation_id + '&link=' + this.results[voice].link;
           this.network.silent(url, function (found) {
             //console.log('found', found);
@@ -1328,7 +1328,7 @@
           var url = this.backend + '&source=' + object.movie.source;          
           url += '&id=' + object.movie.id + '&kinopoisk_id=' + (results[element.translation].kinopoisk_id || object.kinopoisk_id || 0) + '&link=' + element.link;
 
-          this.network.clear(); this.network.timeout(10000);
+          this.network.clear(); this.network.timeout(15000);
           this.network["native"]( element.link+'&nc=1', function (found) {
             // console.log('found', found);
 
@@ -1384,7 +1384,7 @@
        */
       this.getStreamQuality = function (element, call) {
         var _this = this, object = this.object, results = this.results, extract = this.extract;
-        this.network.clear(); this.network.timeout(10000);
+        this.network.clear(); this.network.timeout(15000);
         this.network.silent( element.link, function (plist) {
           //console.log('plist', typeof(plist), plist);
           var playlists = {};
@@ -1518,7 +1518,7 @@
 
         } else {
 
-          this.network.clear(); this.network.timeout(10000);
+          this.network.clear(); this.network.timeout(15000);
           this.network["native"]( results[element.translation].link, function (html) {
             // console.log('str', str);
 
@@ -2490,7 +2490,7 @@
     }
 
     function startPlugin() {
-      window.plugin_FilmixPVA_ready = true;
+      window.plugin_FilmixPVA = { ready: true, mini: true };
 
       var manifest = {
         type: 'video',
@@ -2792,7 +2792,7 @@
 
       function checkPro(token, call) {
         network.clear();
-        network.timeout(8000);
+        network.timeout(10000);
         network.silent(api_url + 'user_profile' + user_dev + token, function (json) {
           if (json) {
             if (json.user_data) {
@@ -2808,6 +2808,8 @@
           Lampa.Noty.show(network.errorDecode(a, c));
         });
       }
+
+      if (window.plugin_FilmixPVA.mini) return;    
 
       Lampa.Template.add('settings_pva_sync_menu', "<div>\n           </div>");
       Lampa.SettingsApi.addParam({
@@ -3134,26 +3136,28 @@
     }
 
     function startTimecode(destroy) {
-      // if (!destroy) {
-      //   if (Lampa.Storage.get('pva_timeline', false)) { 
-      //     if (Lampa.Timeline.listener) {
-      //       if (!Lampa.timecode) Lampa.timecode = new Timecode();
-      //       Lampa.timecode.init();
-      //     }
-      //   };
-      // } else if (Lampa.timecode) {
-      //   Lampa.timecode.destroy(); 
-      // }
+      if (window.plugin_FilmixPVA.mini) return;    
+      if (!destroy) {
+        if (Lampa.Storage.get('pva_timeline', false)) { 
+          if (Lampa.Timeline.listener) {
+            if (!Lampa.timecode) Lampa.timecode = new Timecode();
+            Lampa.timecode.init();
+          }
+        };
+      } else if (Lampa.timecode) {
+        Lampa.timecode.destroy(); 
+      }
     }
 
     function startSources(destroy) {
-      // if (Lampa.Storage.get('pva_sources', false)) { 
-      //   var ScriptItem = 'http://freebie.tom.ru/Sources.js';
-      //   Lampa.Utils.putScriptAsync([ScriptItem], function () { }, function (u) { console.log('Plugins', 'error:', ScriptItem); }, function (u) { console.log('Plugins', 'include:', ScriptItem); }, false );
-      // }
+      if (window.plugin_FilmixPVA.mini) return;    
+      if (Lampa.Storage.get('pva_sources', false)) { 
+        var ScriptItem = 'http://freebie.tom.ru/Sources.js';
+        Lampa.Utils.putScriptAsync([ScriptItem], function () { }, function (u) { console.log('Plugins', 'error:', ScriptItem); }, function (u) { console.log('Plugins', 'include:', ScriptItem); }, false );
+      }
     }
 
-    if (!window.plugin_FilmixPVA_ready) {
+    if (!window.plugin_FilmixPVA) {
       startPlugin(); 
       addSettings();
       startTimecode();
