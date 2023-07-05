@@ -290,8 +290,7 @@
           file = extract[element.translation].file;
           qualities = extract[element.translation].qualities;
           max_quality = extract[element.translation].quality;
-          var filter_data = Lampa.Storage.get('online_filter', '{}');
-          select_quality = parseInt(filter_items.quality[filter_data.quality]);
+          select_quality = parseInt(filter_items.quality[choice.quality]);
         }
         //console.log('file', file, 'qualities', qualities);
 
@@ -375,16 +374,15 @@
 
       function filtred() {
         var filtred = [];
-        var filter_data = Lampa.Storage.get('online_filter', '{}');
 
         if (results.serial == 1) {
           for( var keym in extract) {
             var movie = extract[keym];
             for( var keye in movie.json) {
               var episode = movie.json[keye];
-              if (episode.id == filter_data.season + 1) {
+              if (episode.id == choice.season + 1) {
                 episode.folder.forEach( function (media) {
-                  if (media.translation == filter_items.voice_info[filter_data.voice].id) {
+                  if (media.translation == filter_items.voice_info[choice.voice].id) {
                     filtred.push({
                       episode: parseInt(media.episode),
                       season: media.season,
@@ -401,7 +399,7 @@
           for( var keym in extract) {
             var movie = extract[keym];
 
-            var select_quality = parseInt(filter_items.quality[filter_data.quality]);
+            var select_quality = parseInt(filter_items.quality[choice.quality]);
             var qualities = movie.qualities.filter( function (elem) { return parseInt(elem) <= select_quality });
             var qualitie = (qualities.length > 0 ? Math.max.apply(null, qualities) : 0);
             if (qualitie) {
@@ -536,7 +534,7 @@
        * @param {Object} _object
        */
       this.search = function (object, kinopoisk_id, similar) {
-        // console.log('kinopoisk_id', kinopoisk_id, 'similar', similar);
+        // console.log('kinopoisk_id', kinopoisk_id, 'similar', similar, 'clarification', object.clarification);
         this.object = object;
         var _this = this;
 
@@ -626,7 +624,7 @@
           component.reset();
           this.filters();
           this.append(this.filtred());
-          component.saveChoice(this.choice);
+          component.saveChoice(this.choice);          
         } else {
           var _this = this;
           this.getTranslationEpisodes(this.choice.voice, function () {
@@ -684,6 +682,7 @@
         var _this = this;
         this.extract = [];
         this.translations = [];
+        if (this.results.length > 0 && this.results[this.choice.voice] == undefined) this.choice.voice = 0;
 
         this.results.forEach( function (translation, keyt) {
           if (translation == null) return;
@@ -731,15 +730,11 @@
             if (qualities.length > 0) {
               var qualitie = qualities.slice(-1).pop();
               var link = translation.playlists[qualitie];
-              _this.extract[keyt] = { json : {}, "file": link, translation : translation.translation, "quality": qualitie, "qualities": qualities, 'serial': translation.serial, subtitles: translation.subtitles };
+              _this.extract[keyt] = { json : {}, "file": link, translation : translation.translation, "quality": qualitie, "qualities": qualities, 'serial': translation.serial, subtitles: translation.subtitles, translation_name: translation.translation_name };
             } else {
-              if (_this.qualities) {
-                qualities = _this.qualities.filter( function (elem) { return parseInt(elem) <= parseInt(translation.max_qual) && parseInt(elem) !== 0 });
-                translation.quality = translation.max_qual;
-              }
               var qualitie = translation.quality;
               var link = 'link';
-              _this.extract[keyt] = { json : {}, "file": link, translation : translation.translation, "quality": qualitie, "qualities": qualities, 'serial': translation.serial, subtitles: translation.subtitles };
+              _this.extract[keyt] = { json : {}, "file": link, translation : translation.translation, "quality": qualitie, "qualities": qualities, 'serial': translation.serial, subtitles: translation.subtitles, translation_name: translation.translation_name };
             }
           }
         })
@@ -858,22 +853,19 @@
        * @returns array
        */
       this.filtred = function () {
-        var _this = this, filter_items = this.filter_items;
+        var _this = this, filter_items = this.filter_items, filter_data = this.choice;
         var filtred = [];
-        var filter_data = Lampa.Storage.get('online_filter', '{}');
 
         if (this.hlsproxy && filter_data && filter_data.hlsproxy != undefined)
           if (filter_data.hlsproxy == 0) this.hlsproxy.use = false;
           else if (filter_data.hlsproxy == 1) this.hlsproxy.use = true;
           else if (filter_data.hlsproxy == 2 && window.whois.hlsproxy == false) this.hlsproxy.use = false;
           else this.hlsproxy.use = true;
-        // console.log('hlsproxy.use', this.hlsproxy, filter_data);
 
         this.extract.forEach(function (translation, keyt) {
           if (translation == null) return;
           if (translation.serial == 1) {
             translation.json.forEach(function (seasons, keys) {
-              // if ( keys == filter_data.season + 1 ) {
               if ( keys == filter_data.season ) {
                 seasons.folder.forEach(function (episode, keye) {
                   if (episode.translation == filter_items.voice_info[filter_data.voice].id) {
@@ -892,8 +884,8 @@
             })
           } else {
             filtred.push({
-              title: translation.translation,
-              quality: (translation.qualities.length > 1 || (translation.qualities.length == 1 && translation.qualities.slice(-1) == 0) ? (isNaN(translation.quality) ? translation.quality : translation.quality+'p') : '' ),
+              title: (translation.translation_name ? translation.translation + ' / ' + translation.translation_name : translation.translation),
+              quality: (translation.qualities.length > 0 && translation.qualities.slice(-1) != 9999 ? (isNaN(translation.quality) ? translation.quality : translation.quality+'p') : '' ),
               translation: keyt,
               subtitles: _this.parseSubtitles(translation.subtitles),
             });
@@ -1245,7 +1237,7 @@
        */
       this.getTranslationEpisodes = function(voice, call) {
         var _this = this, object = this.object;
-        // console.log('getEpisodes', results[voice].getEpisodes, results[voice].serial, Lampa.Arrays.getKeys(results[voice].playlists).length);
+        // console.log('getEpisodes', this.results[voice].getEpisodes, this.results[voice].serial, Lampa.Arrays.getKeys(this.results[voice].playlists).length);
         if (this.results[voice] == undefined) return;
         if (this.results[voice].serial == 0 || this.results[voice].getEpisodes || Lampa.Arrays.getKeys(this.results[voice].playlists).length > 0) {
           call();
@@ -1588,7 +1580,7 @@
       this.backend = backendhost+'/lampa/bazonurl?v=121';
       this.hlsproxy = { use: false, link: 'http://back.freebie.tom.ru:8888/', extension: '.m3u8', hlsproxy : ['Off', 'On', /*'On + api'*/], hlsproxy_last: 0 };
       
-      this.success_show = 'Работает только во встроенном плеере или MX (для Android на 102+ версии). Иначе "Фильтр => HLSProxy => On"';
+      // this.success_show = 'Работает только во встроенном плеере или MX (для Android на 102+ версии). Иначе "Фильтр => HLSProxy => On"';
       this.search_base = this.search;
       this.extractData_base = this.extractData;
       this.getFile_base = this.getFile;
@@ -1749,11 +1741,11 @@
         else element.link = this.extract[element.translation].file
 
         if (element.link.substr(-4) === ".mp4" || element.link.indexOf('index.m3u8') > 0) return call();
-        //console.log('element', element);
+        // console.log('element', element);
 
         var url = this.backend + '&source=' + object.movie.source + '&id=' + object.movie.id + '&kinopoisk_id=' + (this.results[element.translation].kinopoisk_id || object.kinopoisk_id || 0);
         if (element.season != undefined) url += '&season=' + element.season + '&episode=' + element.episode;
-        url += '&quality=' + element.quality.split('p')[0] + '&proxy=' + hlsproxy.use + '&link=' + element.link;
+        url += '&quality=' + (element.quality.indexOf('p') > 0 ? element.quality.split('p')[0] : 1080) + '&proxy=' + hlsproxy.use + '&link=' + element.link;
 
         if (choice.hlsproxy == 2) url = this.backend.replace('bazonurl','bazonurl2') + '&source=' + object.movie.source + '&id=' + object.movie.id + '&kinopoisk_id=' + (this.results[element.translation].kinopoisk_id || object.kinopoisk_id) + '&link=link';
 
@@ -1788,6 +1780,13 @@
 
     };
 
+    function KinoPUB(component, _object) {
+
+      Balanser.call(this, component, _object);
+      this.backend = backendhost+'/lampa/kinopuburl?v=121';
+      
+    };
+
     function component(object) {
       var network = new Lampa.Reguest();
       var scroll = new Lampa.Scroll({
@@ -1807,7 +1806,7 @@
         quality: Lampa.Lang.translate('torrent_parser_quality'),
       };
 
-      var filter_sources = ["Filmix", /*"HDRezka", "HDVB",*/ "Alloha", /*"Bazon", "ZetFlix", "KinoVOD", "VideoDB",*/ /*"VideoCDN", "CDNMovies",*/ /*"Kinobase",*/ /*"Collaps", "Kodik",*/ ];
+      var filter_sources = ["Filmix", /*"HDRezka", "HDVB",*/ "Alloha", /*"Bazon", "KinoPUB", "ZetFlix", "KinoVOD", "VideoDB",*/ "VideoCDN", "CDNMovies", /*"Kinobase",*/ "Collaps", "Kodik", ];
 
       var balanser_default = filter_sources.slice(0,1).pop();
       var balanser = Lampa.Storage.get('online_balanser', balanser_default);
@@ -1850,13 +1849,14 @@
         Alloha: new Alloha(this, object),
         VideoDB: new VideoDB(this, object),
         ZetFlix: new ZetFlix(this, object),
-        KinoVOD: new KinoVOD(this, object),
         Kinobase: new Kinobase(this, object),
+        KinoVOD: new KinoVOD(this, object),
+        CDNMovies: new CDNMovies(this, object),
         VideoCDN: new VideoCDN(this, object),
         Collaps: new Collaps(this, object),
         Bazon: new Bazon(this, object),
+        KinoPUB: new KinoPUB(this, object),
         Kodik: new Kodik(this, object),
-        CDNMovies: new CDNMovies(this, object),
       };
 
       scroll.body().addClass('torrent-list');
@@ -2065,14 +2065,15 @@
       };
 
       this.extendChoice = function () {
-        var data = Lampa.Storage.cache('online_choice_' + balanser, 500, {});
+        var data = Lampa.Storage.cache('online_choice_' + balanser, 2000, {});
         var save = data[selected_id || object.movie.id] || {};
         extended = true;
         sources[balanser].extendChoice(save);
+        return save;
       };
 
       this.saveChoice = function (choice) {
-        var data = Lampa.Storage.cache('online_choice_' + balanser, 500, {});
+        var data = Lampa.Storage.cache('online_choice_' + balanser, 2000, {});
         data[selected_id || object.movie.id] = choice;
         Lampa.Storage.set('online_choice_' + balanser, data);
       };
@@ -2131,7 +2132,7 @@
       this.loading = function (status) {
         if (status) this.activity.loader(true);else {
           this.activity.loader(false);
-          this.activity.toggle();
+          if (Lampa.Controller.enabled().name === 'content') this.activity.toggle();
         }
       };
       /**
@@ -2143,7 +2144,7 @@
         var select = [];
 
         var add = function add(type, title) {
-          var need = Lampa.Storage.get('online_filter', '{}');
+          var need = choice;// || Lampa.Storage.get('online_filter', '{}');
           var items = filter_items[type];
           var subitems = [];
           var value = need[type];
@@ -2168,7 +2169,7 @@
           title: Lampa.Lang.translate('torrent_parser_reset'),
           reset: true
         });
-        Lampa.Storage.set('online_filter', choice);
+        // Lampa.Storage.set('online_filter', choice);
         add('source', 'Источник');
         if (filter_items.voice && filter_items.voice.length) add('voice', Lampa.Lang.translate('torrent_parser_voice'));
         if (filter_items.season && filter_items.season.length) add('season', Lampa.Lang.translate('torrent_serial_season'));
@@ -2182,7 +2183,7 @@
             selected: e == balanser
           };
         }));
-        this.selected(filter_items);
+        this.selected(filter_items, choice);
       };
       /**
        * Закрыть фильтр
@@ -2197,9 +2198,9 @@
        */
 
 
-      this.selected = function (filter_items) {
-        var need = Lampa.Storage.get('online_filter', '{}'),
-            select = [];
+      this.selected = function (filter_items, choice) {
+        var need = choice;// || Lampa.Storage.get('online_filter', '{}');
+        var select = [];
 
         for (var i in need) {
           if (filter_items[i] && filter_items[i].length) {
@@ -3150,7 +3151,7 @@
     }
 
     function startSources(destroy) {
-      if (window.plugin_FilmixPVA.mini) return;    
+      if (window.plugin_FilmixPVA.mini || window.plugin_sources_ready) return;    
       if (Lampa.Storage.get('pva_sources', false)) { 
         var ScriptItem = 'http://freebie.tom.ru/Sources.js';
         Lampa.Utils.putScriptAsync([ScriptItem], function () { }, function (u) { console.log('Plugins', 'error:', ScriptItem); }, function (u) { console.log('Plugins', 'include:', ScriptItem); }, false );
@@ -3158,12 +3159,12 @@
     }
 
     if (!window.plugin_FilmixPVA) {
-      startPlugin(); 
+      var app_js = window.localStorage.getItem('app.js', '');
+      if (app_js != undefined && app_js.length > 0) { window.localStorage.setItem('app.js', ''); console.log('DB', 'localStorage', 'delete', 'app.js'); }
+      startPlugin();
       addSettings();
       startTimecode();
       startSources();
     }
-
-    // Lampa.Storage.set('is_true_mobile', 'false');
 
 })();
