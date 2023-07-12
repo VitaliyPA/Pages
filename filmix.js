@@ -541,10 +541,10 @@
         var url = this.backend + '&source=' + object.movie.source;
         if (typeof(similar) == 'object' && similar.slice().pop().link) {
           var sim = similar.slice().pop();
-          url += '&id=' + object.movie.id + '&kinopoisk_id=' + (object.kinopoisk_id || 0) + '&link=' + sim.link + '&filmId=' + sim.id;
+          url += '&id=' + object.movie.id + (object.movie.imdb_id ? '&imdb_id='+object.movie.imdb_id : '') + '&kinopoisk_id=' + (object.kinopoisk_id || 0) + '&link=' + sim.link + '&filmId=' + sim.id;
         } else {
           if ((object.kinopoisk_id || kinopoisk_id || 0) == 0 && object.search.length < 3) { component.empty('title (' + object.search + ') is smoll'); return; }
-          url += '&id=' + object.movie.id + '&kinopoisk_id=' + (object.kinopoisk_id || kinopoisk_id || 0) + '&title=' + encodeURIComponent(object.search);
+          url += '&id=' + object.movie.id + (object.movie.imdb_id ? '&imdb_id='+object.movie.imdb_id : '') + '&kinopoisk_id=' + (object.kinopoisk_id || kinopoisk_id || 0) + '&title=' + encodeURIComponent(object.search);
           if (object.movie.source == 'tmdb' || object.movie.source == 'cub') url += '&serial=' + (object.movie.number_of_seasons ? 1 : 0);
           var relise = (object.movie.number_of_seasons ? object.movie.first_air_date : object.movie.release_date) || '0000';
           var year = parseInt((relise + '').slice(0, 4));
