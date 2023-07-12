@@ -1294,6 +1294,14 @@
       this.android = false;
       this.append_ext = this.append_call;
 
+      this.getStreamLink = function (element, android) {
+        var kp_id = (this.results[element.translation].kinopoisk_id || this.object.kinopoisk_id || 0);
+        var url = this.backend + '&source=' + this.object.movie.source + '&id=' + this.object.movie.id + '&kinopoisk_id=' + kp_id;          
+        if (kp_id == 0) url += '&filmId=' + this.object.balanser_id;
+        url += '&link=' + element.link;
+        return url;
+      }
+
       /**
        * parse getStream
        * @param {object} element
@@ -1317,8 +1325,7 @@
           });
 
         } else {
-          var url = this.backend + '&source=' + object.movie.source;          
-          url += '&id=' + object.movie.id + '&kinopoisk_id=' + (results[element.translation].kinopoisk_id || object.kinopoisk_id || 0) + '&link=' + element.link;
+          var url = this.getStreamLink(element, false);
 
           this.network.clear(); this.network.timeout(15000);
           this.network["native"]( element.link+'&nc=1', function (found) {
