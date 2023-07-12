@@ -1364,7 +1364,7 @@
             }, function (a, c) {
               return error(_this.network.errorDecode(a, c));
             },
-              component.LZString.compressToBase64(found), { dataType: 'text' }
+              found || component.LZString.compressToBase64(found), { dataType: 'text' }
             );
 
           }, function (a, c) {
