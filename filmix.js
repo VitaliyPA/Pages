@@ -575,7 +575,10 @@
                     _this.results = (typeof(found.data) === "string" ? JSON.parse(found.data) : found.data);
                     object.balanser_id = found.balanser_id || found.kpid;
                     //console.log('results', results);
-                    if (_this.results.length > 0) _this.success(_this.results);
+                    if (_this.results.length > 0) { 
+                      if (_this.after_search) _this.after_search({ip: found.ip});
+                      _this.success(_this.results); 
+                    }
                 }
             }
             component.loading(false);
@@ -1297,7 +1300,7 @@
       this.getStreamLink = function (element, android) {
         var kp_id = (this.results[element.translation].kinopoisk_id || this.object.kinopoisk_id || 0);
         var url = this.backend + '&source=' + this.object.movie.source + '&id=' + this.object.movie.id + '&kinopoisk_id=' + kp_id;          
-        if (kp_id == 0) url += '&filmId=' + this.object.balanser_id;
+        url += '&filmId=' + this.object.balanser_id;
         url += '&link=' + element.link;
         return url;
       }
@@ -1477,27 +1480,22 @@
 
       Balanser.call(this, component, _object);
       this.backend = backendhost+'/lampa/cdnmoviesurl?v=977';
-      this.search_base = this.search;
   
       /**
-       * Поиск
+       * После поиска
        * @param {Object} _object
        */
-      this.search = function (_object, kinopoisk_id, similar) {
-        // console.log('kinopoisk_id', kinopoisk_id, 'similar', similar, 'window.whois', window.whois);
-        if (!window.whois) { component.whois(_object, kinopoisk_id, similar, this.network); component.loading(false); return; } 
-        else if (!window.whois && !window.whois.ip) { component.empty('ip не определен'); return; }
-        else if (window.whois && window.whois.ip && window.whois.ip.startsWith('192.168.') == false) { this.append_ext = this.append_call; this.getStream = this.getStream_ext; }
-        // else if (window.whois && window.whois.ip && window.whois.ip.startsWith('192.168.') == false) { component.empty('привязка по ip, работает только в локальной сети'); return; }
+      this.after_search = function (params) {
+        if (params && params.ip && params.ip.length > 5) { this.append_ext = this.append_call; this.getStream = this.getStream_ext; }
         this.getStream_ok = false;
-
-        this.search_base(_object, kinopoisk_id, similar);
       }
+      
 
       this.getStreamLink = function (element, android) {
         var kp_id = (this.results[element.translation].kinopoisk_id || this.object.kinopoisk_id || 0);
-        var url = this.backend + '&source=' + this.object.movie.source + '&id=' + this.object.movie.id + '&kinopoisk_id=' + kp_id;
-        url += '&filmId=' + this.object.balanser_id + '&title=' + encodeURIComponent(this.object.search);
+        var url = this.backend + '&source=' + this.object.movie.source + '&id=' + this.object.movie.id + '&kinopoisk_id=' + kp_id;          
+        url += '&filmId=' + this.object.balanser_id;
+        url += '&link=' + 'element.link';
         return url;
       }
 
@@ -2021,7 +2019,7 @@
                     object.kinopoisk_id = kinopoisk_id;
                     sources[balanser].search(object, kinopoisk_id);
                 } else if (['HDRezka', 'HDVB', 'Alloha', 'ZetFlix', 'KinoVOD', 'Kinobase', 'VideoCDN', 'CDNMovies', 'Bazon', 'Kodik'].indexOf(balanser) != -1) {
-                    if (balanser == 'VideoCDN' && object.movie.imdb_id) sources[balanser].search(object, object.movie.imdb_id); else sources[balanser].search(object, 0);
+                    sources[balanser].search(object, 0);
                 }
                 else pillow();
               }, pillow.bind(_this2), false, { dataType: 'text' }
