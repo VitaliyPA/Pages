@@ -736,7 +736,7 @@
               _this.extract[keyt] = { json : {}, "file": link, translation : translation.translation, "quality": qualitie, "qualities": qualities, 'serial': translation.serial, subtitles: translation.subtitles, translation_name: translation.translation_name };
             } else {
               var qualitie = translation.quality;
-              var link = 'link';
+              var link = translation.link || 'link';
               _this.extract[keyt] = { json : {}, "file": link, translation : translation.translation, "quality": qualitie, "qualities": qualities, 'serial': translation.serial, subtitles: translation.subtitles, translation_name: translation.translation_name };
             }
           }
