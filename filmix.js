@@ -954,7 +954,11 @@
 
             if (element.loading) return; element.loading = true;
 
-            if (_this.append_ext) { _this.append_ext(items, item, viewed, view, hash_file, element); return; }
+            if (_this.append_ext) { 
+              if (viewed.indexOf(hash_file) == -1) { viewed.push(hash_file); }
+              _this.append_ext(items, item, viewed, view, hash_file, element); 
+              return; 
+            }
 
             var extra = _this.getFile(element, element.quality);
             if (extra.file) {
@@ -994,6 +998,7 @@
                 item.append('<div class="torrent-item__viewed">' + Lampa.Template.get('icon_star', {}, true) + '</div>');
                 Lampa.Storage.set('online_view', viewed);
               }
+
             } else Lampa.Noty.show(Lampa.Lang.translate('online_nolink'));
 
           });
@@ -1591,10 +1596,9 @@
        * @param {Object} _object
        */
       this.after_search = function (params) {
-        if (params && params.ip && params.ip.length > 5) { this.append_ext = this.append_call; this.getStream = this.getStream_ext; }
-        this.getStream_ok = false;
+        // if (params && params.ip && params.ip.length > 5) { this.append_ext = this.append_call; this.getStream = this.getStream_ext; }
+        // this.getStream_ok = false;
       }
-      
 
       this.getStreamLink = function (element, android) {
         var kp_id = (this.results[element.translation].kinopoisk_id || this.object.kinopoisk_id || 0);
@@ -1823,7 +1827,7 @@
         quality: Lampa.Lang.translate('torrent_parser_quality'),
       };
 
-      var filter_sources = ["Filmix", "Rezka", /*"HDRezka", "HDVB",*/ "Alloha", /*"Bazon", "KinoPUB", "ZetFlix", "KinoVOD", "VideoDB",*/ "VideoCDN", /*"CDNMovies", "Kinobase",*/ "Collaps", "Kodik", ];
+      var filter_sources = ["Filmix", "Rezka", /*"HDRezka", "HDVB",*/ "Alloha", /*"Bazon", "KinoPUB", "ZetFlix", "KinoVOD", "VideoDB",*/ "VideoCDN", "CDNMovies", /*"Kinobase",*/ "Collaps", "Kodik", ];
 
       var balanser_default = filter_sources.slice(0,1).pop();
       var balanser = Lampa.Storage.get('online_balanser', balanser_default);
@@ -2033,7 +2037,7 @@
                     sources[balanser].search(object, kinopoisk_id);
                 } else if (['Rezka'].indexOf(balanser) != -1 && object.movie.imdb_id) {
                     sources[balanser].search(object, 0);
-                } else if (['HDRezka', 'HDVB', 'Alloha', 'ZetFlix', 'KinoVOD', 'Kinobase', 'VideoCDN', 'CDNMovies', 'Bazon', 'Kodik'].indexOf(balanser) != -1) {
+                } else if (['HDRezka', 'HDVB', 'Alloha', 'ZetFlix', 'KinoVOD', 'Kinobase', 'VideoCDN', /*'CDNMovies',*/ 'Bazon', 'Kodik'].indexOf(balanser) != -1) {
                     sources[balanser].search(object, 0);
                 }
                 else pillow();
@@ -2044,7 +2048,7 @@
                 sources[balanser].search(object, object.kinopoisk_id);
             } else if (['Rezka'].indexOf(balanser) != -1 && object.movie.imdb_id) {
                 sources[balanser].search(object, 0);
-            } else if (['HDRezka', 'HDVB', 'Alloha', 'ZetFlix', 'KinoVOD', 'Kinobase', 'VideoCDN', 'CDNMovies', 'Bazon', 'Kodik'].indexOf(balanser) != -1) {
+            } else if (['HDRezka', 'HDVB', 'Alloha', 'ZetFlix', 'KinoVOD', 'Kinobase', 'VideoCDN', /*'CDNMovies',*/ 'Bazon', 'Kodik'].indexOf(balanser) != -1) {
                 sources[balanser].search(object, 0);
             }
             else pillow();
@@ -3092,7 +3096,7 @@
       this.updateTimeline = function (e) {
         _this.viewed[e.data.hash] = e.data.road;
         Lampa.Storage.set('file_view_sync', _this.viewed, true);
-        if (Lampa.Storage.field('player') != 'inner') _this.add();        
+        if (Lampa.Storage.field('player') != 'inner' && Lampa.Storage.field('player') != 'tizen') _this.add();
       }
 
       this.destroyPlayer = function (e) {
@@ -3105,6 +3109,7 @@
         if (this.account.profile.id) url = Lampa.Utils.addUrlComponent(url, 'profile=' + encodeURIComponent(this.account.profile.id));
         if (this.account.email) url = Lampa.Utils.addUrlComponent(url, 'email=' + encodeURIComponent(this.account.email));
         url = Lampa.Utils.addUrlComponent(url, 'start=' + Lampa.Storage.get('timeline_last_update_time', 0));
+        url = Lampa.Utils.addUrlComponent(url, 'player=' + Lampa.Storage.field('player'));
         return url;
       }
 
