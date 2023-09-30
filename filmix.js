@@ -1827,7 +1827,7 @@
         quality: Lampa.Lang.translate('torrent_parser_quality'),
       };
 
-      var filter_sources = ["Filmix", "Rezka", /*"HDRezka", "HDVB",*/ "Alloha", /*"Bazon", "KinoPUB", "ZetFlix", "KinoVOD", "VideoDB",*/ "VideoCDN", "CDNMovies", /*"Kinobase",*/ "Collaps", "Kodik", ];
+      var filter_sources = ["Filmix", "Rezka", /*"HDRezka", "HDVB",*/ "Alloha", /*"Bazon", "KinoPUB", "ZetFlix", "KinoVOD", "VideoDB",*/ "VideoCDN", /*"CDNMovies", "Kinobase",*/ "Collaps", "Kodik", ];
 
       var balanser_default = filter_sources.slice(0,1).pop();
       var balanser = Lampa.Storage.get('online_balanser', balanser_default);
@@ -3094,6 +3094,7 @@
       }
 
       this.updateTimeline = function (e) {
+        if (e.data == undefined || e.data.hash == undefined || e.data.hash.length <= 1) return;
         _this.viewed[e.data.hash] = e.data.road;
         Lampa.Storage.set('file_view_sync', _this.viewed, true);
         if (Lampa.Storage.field('player') != 'inner' && Lampa.Storage.field('player') != 'tizen') _this.add();
@@ -3120,6 +3121,7 @@
         for (var i in _this.viewed) {
           data_sync.push({ id: i, data: _this.viewed[i] });
         }
+        if (data_sync.length == 0) return;
         this.network.silent(url, function () { 
           for (var i in data_sync) { delete _this.viewed[data_sync[i].id]; }
           Lampa.Storage.set('file_view_sync', _this.viewed, true);
@@ -3180,7 +3182,7 @@
     function startSources(destroy) {
       if (true || window.plugin_FilmixPVA.mini || window.plugin_sources_ready) return;
       if (Lampa.Storage.get('pva_sources', false)) {
-        var ScriptItem = 'http://freebie.tom.ru/Sources.js';
+        var ScriptItem = 'http://freebie.tom.ru/Sources.php';
         Lampa.Utils.putScriptAsync([ScriptItem], function () { }, function (u) { console.log('Plugins', 'error:', ScriptItem); }, function (u) { console.log('Plugins', 'include:', ScriptItem); }, false );
       }
     }
