@@ -1590,78 +1590,27 @@
 
       Balanser.call(this, component, _object);
       this.backend = backendhost+'/lampa/cdnmoviesurl?'+backendver;
-  
+      this.hlsproxy = { use: false, link: 'http://back.freebie.tom.ru:8888/', extension: '.mp4', force_use: false, };
+
+      this.getFile_base = this.getFile;
+
       /**
        * После поиска
        * @param {Object} _object
        */
       this.after_search = function (params) {
-        // if (params && params.ip && params.ip.length > 5) { this.append_ext = this.append_call; this.getStream = this.getStream_ext; }
-        // this.getStream_ok = false;
+        // if (params && params.ip && params.ip.length > 5) this.hlsproxy.force_use = true;
       }
 
-      this.getStreamLink = function (element, android) {
-        var kp_id = (this.results[element.translation].kinopoisk_id || this.object.kinopoisk_id || 0);
-        var url = this.backend + '&source=' + this.object.movie.source + '&id=' + this.object.movie.id + '&kinopoisk_id=' + kp_id;          
-        if (kp_id == 0) url += '&filmId=' + this.object.balanser_id;
-        url += '&link=' + 'element.link';
-        return url;
+      this.getFile = function (element, max_quality) {
+        var _this = this;
+        var files = this.getFile_base(element, max_quality);        
+        if (this.hlsproxy && this.hlsproxy.force_use) {
+          files.file = this.hlsproxy.link + '?link=' + files.file;
+          Lampa.Arrays.getKeys(files.quality).forEach(function (elem) { files.quality[elem] = _this.hlsproxy.link + '?link=' + files.quality[elem]; })
+        }
+        return files;
       }
-
-      this.getStream_ext = function (element, call, error) {
-        var _this = this, object = this.object, results = this.results, extract = this.extract;
-        if (element.season != undefined) 
-          element.link = extract[element.translation].json[element.season].folder[element.episode].file;
-        else element.link = extract[element.translation].file;
-
-        // console.log('element', element);
-        if (this.getStream_ok && element.link.startsWith('http') && (element.link.substr(-5) === ".m3u8" || element.link.substr(-4) === ".mp4")) {
-
-          if ( results[element.translation].serial == 0 &&  Lampa.Arrays.getKeys(results[element.translation].playlists).length > 0)
-            return call(element);
-          if ( results[element.translation].serial == 1 &&  Lampa.Arrays.getKeys(results[element.translation].playlists[ element.season ][ element.episode ]).length > 0)
-            return call(element);
-
-        } else {
-
-          this.network.clear(); this.network.timeout(15000);
-          this.network["native"]( results[element.translation].link, function (html) {
-            // console.log('str', str);
-
-            _this.network.clear(); _this.network.timeout(15000);
-            _this.network.silent( _this.getStreamLink(element), function (str) {
-              // console.log('str', str);
-              _this.getStream_ok = true;
-
-              var found = Lampa.Arrays.decodeJson(str, undefined);
-              if (found && found.result) {
-                if (found.action === 'select') {                    
-                  return error('select');
-                } else if (found.action === 'done') {
-                  _this.results = (typeof(found.data) === "string" ? JSON.parse(found.data) : found.data);
-                  object.balanser_id = found.balanser_id || found.kpid;
-                  //console.log('results', results);
-                  if (_this.results.length > 0) _this.success(_this.results);
-                  return call(element);
-                }
-              }
-              else if (found && found.error) { return error(found.error); }
-              else return error(Lampa.Lang.translate('online_nolink'));
-
-            }, function (a, c) {
-              return error(_this.network.errorDecode(a, c));
-            },
-              component.LZString.compressToBase64(html), { dataType: 'text' }
-            );
-
-          }, function (a, c) {
-              return error(_this.network.errorDecode(a, c));
-          },
-              false, { dataType: 'text' }
-          );
-
-        };
-      };
      
     };
 
