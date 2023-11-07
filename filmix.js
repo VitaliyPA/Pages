@@ -1184,7 +1184,7 @@
       this.getEpisodes = function (season, call) {
         var object = this.object;
         object.seasons[season] = [];
-        if (typeof object.movie.id == 'number' && object.movie.name) {
+        if (typeof object.movie.id == 'number' && object.movie.name && (object.movie.source == 'tmdb' || object.movie.source == 'cub')) {
           var tmdburl = 'tv/' + object.movie.id + '/season/' + season + '?api_key=' + Lampa.TMDB.key() + '&language=' + Lampa.Storage.get('language', 'ru');
           var baseurl = Lampa.TMDB.api(tmdburl);
           this.network.timeout(1000 * 10);
@@ -1776,7 +1776,7 @@
         quality: Lampa.Lang.translate('torrent_parser_quality'),
       };
 
-      var filter_sources = ["Filmix", "Rezka", /*"HDRezka", "HDVB",*/ "Alloha", /*"Bazon", "KinoPUB", "ZetFlix", "KinoVOD", "VideoDB",*/ "VideoCDN", /*"CDNMovies", "Kinobase",*/ "Collaps", "Kodik", ];
+      var filter_sources = ["Filmix", "Rezka", /*"HDRezka", "HDVB", "Alloha",*/ "CDNMovies", /*"Bazon", "KinoPUB", "ZetFlix", "KinoVOD", "VideoDB",*/ "VideoCDN", /*"Kinobase",*/ "Collaps", "Kodik", ];
 
       var balanser_default = filter_sources.slice(0,1).pop();
       var balanser = Lampa.Storage.get('online_balanser', balanser_default);
@@ -1986,7 +1986,7 @@
                     sources[balanser].search(object, kinopoisk_id);
                 } else if (['Rezka'].indexOf(balanser) != -1 && object.movie.imdb_id) {
                     sources[balanser].search(object, 0);
-                } else if (['HDRezka', 'HDVB', 'Alloha', 'ZetFlix', 'KinoVOD', 'Kinobase', 'VideoCDN', /*'CDNMovies',*/ 'Bazon', 'Kodik'].indexOf(balanser) != -1) {
+                } else if (['HDRezka', 'HDVB', 'Alloha', 'ZetFlix', 'KinoVOD', 'Kinobase', 'VideoCDN', 'CDNMovies', 'Bazon', 'Kodik'].indexOf(balanser) != -1) {
                     sources[balanser].search(object, 0);
                 }
                 else pillow();
@@ -1997,7 +1997,7 @@
                 sources[balanser].search(object, object.kinopoisk_id);
             } else if (['Rezka'].indexOf(balanser) != -1 && object.movie.imdb_id) {
                 sources[balanser].search(object, 0);
-            } else if (['HDRezka', 'HDVB', 'Alloha', 'ZetFlix', 'KinoVOD', 'Kinobase', 'VideoCDN', /*'CDNMovies',*/ 'Bazon', 'Kodik'].indexOf(balanser) != -1) {
+            } else if (['HDRezka', 'HDVB', 'Alloha', 'ZetFlix', 'KinoVOD', 'Kinobase', 'VideoCDN', 'CDNMovies', 'Bazon', 'Kodik'].indexOf(balanser) != -1) {
                 sources[balanser].search(object, 0);
             }
             else pillow();
@@ -2451,7 +2451,7 @@
         object = _object;
         var episodes = [];
 
-        if (typeof object.movie.id == 'number' && object.movie.name) {
+        if (typeof object.movie.id == 'number' && object.movie.name && (object.movie.source == 'tmdb' || object.movie.source == 'cub')) {
           var tmdburl = 'tv/' + object.movie.id + '/season/' + season + '?api_key=' + Lampa.TMDB.key() + '&language=' + Lampa.Storage.get('language', 'ru');
           var baseurl = Lampa.TMDB.api(tmdburl);
           network.timeout(1000 * 10);
@@ -2634,7 +2634,17 @@
           ru: 'Возникла ошибка',
           uk: 'Виникла помилка',
           en: 'An error has occurred'
-        }
+        },
+        pva_sources_myshows_login: {
+          ru: 'Имя пользователя MyShows',
+          uk: 'Имя пользователя MyShows',
+          en: 'Имя пользователя MyShows'
+        },
+        pva_sources_myshows_password: {
+          ru: 'Пароль пользователя MyShows',
+          uk: 'Пароль пользователя MyShows',
+          en: 'Пароль пользователя MyShows'
+        },
       });
 
       function resetTemplates() {
@@ -3015,6 +3025,67 @@
         onChange: function (value) {
         }
       });
+
+      // MyShows
+      // Lampa.Template.add('settings_pva_sources_myshows_menu', "<div>\n           </div>");
+      Lampa.Params.select('pva_sources_myshows_login', '', '');
+      Lampa.Params.select('pva_sources_myshows_password', '', '');
+      Lampa.Template.add('settings_pva_sources_myshows_menu', "<div>\n     <div class=\"settings-param selector\" data-name=\"pva_sources_myshows_login\" data-type=\"input\" data-string=\"true\" placeholder=\"#{settings_cub_not_specified}\">\n         <div class=\"settings-param__name\">#{pva_sources_myshows_login}</div>\n         <div class=\"settings-param__value\"></div>\n     </div>\n     <div class=\"settings-param selector\" data-name=\"pva_sources_myshows_password\" data-type=\"input\" data-string=\"true\" placeholder=\"#{settings_cub_not_specified}\">\n         <div class=\"settings-param__name\">#{pva_sources_myshows_password}</div>\n         <div class=\"settings-param__value\"></div>\n     </div>");
+      
+      Lampa.SettingsApi.addParam({
+        component: 'pva_sources_menu',
+        param: {
+          name: 'pva_sources_myshows_menu',
+          type: 'static', //доступно select,input,trigger,title,static
+          default: ''
+        },
+        field: {
+          name: 'Поиск на MyShows',
+          description: 'Требуется регистрация https://myshows.me'
+        },
+        onRender: function (item) {
+          item.on('hover:enter', function () {          
+            Lampa.Settings.create('pva_sources_myshows_menu');
+            Lampa.Controller.enabled().controller.back = function(){
+              Lampa.Settings.create('pva_sources_menu');
+            }
+          })
+        }
+      });
+
+      // Lampa.SettingsApi.addParam({
+      //   component: 'pva_sources_myshows_menu',
+      //   param: {
+      //     name: 'pva_sources_myshows_login',
+      //     type: 'input', //доступно select,input,trigger,title,static
+      //     value: '',
+      //     placeholder: 'settings_cub_not_specified',
+      //     default: ''
+      //   },
+      //   field: {
+      //     name: Lampa.Lang.translate('pva_sources_myshows_login'),
+      //     // description: 'Имя пользователя MyShows'
+      //   },
+      //   onChange: function (value) {
+      //   }
+      // });
+
+      // Lampa.SettingsApi.addParam({
+      //   component: 'pva_sources_myshows_menu',
+      //   param: {
+      //     name: 'pva_sources_myshows_password',
+      //     type: 'input', //доступно select,input,trigger,title,static
+      //     value: '',
+      //     placeholder: 'settings_cub_not_specified',
+      //     default: ''
+      //   },
+      //   field: {
+      //     name: Lampa.Lang.translate('pva_sources_myshows_password'),
+      //     // description: 'Пароль пользователя MyShows'
+      //   },
+      //   onChange: function (value) {
+      //   }
+      // });
 
     }
 
