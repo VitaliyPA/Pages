@@ -1776,7 +1776,7 @@
         quality: Lampa.Lang.translate('torrent_parser_quality'),
       };
 
-      var filter_sources = ["Filmix", "Rezka", /*"HDRezka", "HDVB",*/ "Alloha", "CDNMovies", /*"Bazon", "KinoPUB", "ZetFlix", "KinoVOD", "VideoDB",*/ "VideoCDN", /*"Kinobase",*/ "Collaps", "Kodik", ];
+      var filter_sources = ["Filmix", "Rezka", /*"HDRezka", "HDVB",*/ "Alloha", /*"CDNMovies", "Bazon", "KinoPUB", "ZetFlix", "KinoVOD", "VideoDB",*/ "VideoCDN", /*"Kinobase",*/ "Collaps", "Kodik", ];
 
       var balanser_default = filter_sources.slice(0,1).pop();
       var balanser = Lampa.Storage.get('online_balanser', balanser_default);
@@ -3094,6 +3094,7 @@
       this.error = 0;
       this.viewed = Lampa.Storage.cache('file_view_sync', 1000, {});
       var _this = this;
+      this.received = {};
 
       this.init = function () {
         if (Lampa.Account.hasPremium()) { Lampa.Noty.show('Timeline - не для CUB Premium'); return; }
@@ -3114,13 +3115,16 @@
       }
 
       this.updateTimeline = function (e) {
+        // console.log('Timeline', 'updateTimeline', e);
         if (e.data == undefined || e.data.hash == undefined || e.data.hash.length <= 1) return;
+        if (_this.received[e.data.hash]) { delete _this.received[e.data.hash]; return; }
         _this.viewed[e.data.hash] = e.data.road;
         Lampa.Storage.set('file_view_sync', _this.viewed, true);
-        if (Lampa.Storage.field('player') != 'inner' && Lampa.Storage.field('player') != 'tizen') _this.add();
+        if (Lampa.Player.opened() == false && Lampa.Storage.field('player') != 'inner' && Lampa.Storage.field('player') != 'tizen') _this.add();
       }
 
       this.destroyPlayer = function (e) {
+        // console.log('Timeline', 'destroyPlayer', e);
         _this.add();
       }
 
@@ -3156,18 +3160,12 @@
           if (result.error) return;
           if (result.result) {
             if (result.timelines && Lampa.Arrays.getKeys(result.timelines).length > 0) {
-              var viewed = Lampa.Storage.cache('file_view', 10000, {});          
               for (var i in result.timelines) {
                 var time = result.timelines[i];
                 if (!Lampa.Arrays.isObject(time)) continue;
-                viewed[i] = time;
-                Lampa.Arrays.extend(viewed[i], {
-                  duration: 0,
-                  time: 0,
-                  percent: 0
-                });
+                _this.received[i] = true;
+                Lampa.Timeline.update({ hash: i, duration: time.duration, time: time.time, percent: time.percent, profile: time.profile, received: true });
               }
-              Lampa.Storage.set('file_view', viewed, true);
             }
             Lampa.Storage.set('timeline_last_update_time', _this.last_update_time);
           }
