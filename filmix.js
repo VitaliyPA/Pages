@@ -3227,4 +3227,4 @@
       startSources();
     }
 
-})( 'http://back.freebie.tom.ru', 'v=967', 'https://cf.freebie.tom.ru' );
+})( 'http://back.freebie.tom.ru', 'v=000', 'https://cf.freebie.tom.ru' );
