@@ -81,7 +81,7 @@
           onChange: function (value) {
           }
         });
-        Lampa.Params.select('jackett_url_pva', '', 'jacred.ru');
+        Lampa.Params.select('jackett_url_pva', '', '');
         Lampa.Params.select('jackett_key_pva', '', '');
         Lampa.Settings.main().update();
 
