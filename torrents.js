@@ -45,7 +45,7 @@
                 items: []
               };
               jackett.jackett_url_pva.split(';').forEach( function(item) {
-                jackett.items.push({ title: item.startsWith('#') ? item.slice(1) : item, jackett_url: item.startsWith('#') ? item.slice(1) : item, jackett_key: '', interview: item.startsWith('#') ? 'all' : 'healthy', selected: false });
+                jackett.items.push({ title: item.toLowerCase().indexOf('#') == 0 ? item.slice(1) : item, jackett_url: item.toLowerCase().indexOf('#') == 0 ? item.slice(1) : item, jackett_key: '', interview: item.toLowerCase().indexOf('#') == 0 ? 'all' : 'healthy', selected: false });
               });
               var i = 0;
               jackett.jackett_key_pva.split(';').forEach( function(item) {
