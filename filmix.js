@@ -2499,8 +2499,8 @@
       var manifest = {
         type: 'video',
         version: '1.0.0',
-        name: 'Онлайн - Filmix',
-        description: 'Плагин для просмотра онлайн сериалов и фильмов',
+        name: 'Онлайн - Filmix (устарел)',
+        description: 'Плагин для просмотра онлайн сериалов и фильмов (устарел)',
         component: 'FilmixPVA',
         onContextMenu: function onContextMenu(object) {
           return {
