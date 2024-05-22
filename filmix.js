@@ -102,7 +102,7 @@
         } else {
 
           object.filmix_id = title;
-          if ( window.filmix.max_qualitie == 480 ) { token = token.replace(/user_dev_token=.+?&/, 'user_dev_token=807fe4ac46fe7fcff3fbced840fa5744&'); window.filmix.max_qualitie = 720; }
+          // if ( window.filmix.max_qualitie == 480 ) { token = token.replace(/user_dev_token=.+?&/, 'user_dev_token=807fe4ac46fe7fcff3fbced840fa5744&'); window.filmix.max_qualitie = 720; }
 
           var url = (window.filmix.is_max_qualitie ? url_api+'post/'+object.filmix_id+token : url_api+'post/'+object.filmix_id+token);
           network.clear(); network.timeout(15000);
