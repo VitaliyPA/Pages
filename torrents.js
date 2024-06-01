@@ -40,17 +40,24 @@
                 jackett_url: Lampa.Storage.field('jackett_url'), 
                 jackett_key: Lampa.Storage.field('jackett_key'), 
                 jackett_interview: Lampa.Storage.field('jackett_interview'),
-                jackett_url_pva: Lampa.Storage.get('jackett_url_pva', 'jacred.xyz;jacred.ru;jac.lampa32.ru;https://jacred.viewbox.dev;jacred.freebie.tom.ru'),
-                jackett_key_pva: Lampa.Storage.get('jackett_key_pva', ';;;viewbox;'),
+                jackett_url_pva: Lampa.Storage.get('jackett_url_pva', 'jacred.freebie.tom.ru;jacred.ru;jacred.my.to;jac.lampa32.ru;https://jacred.viewbox.dev;jacred.xyz'),
+                jackett_key_pva: Lampa.Storage.get('jackett_key_pva', ';;;;viewbox;'),
                 items: []
               };
-              jackett.jackett_url_pva.split(';').forEach( function(item) {
-                jackett.items.push({ title: item.toLowerCase().indexOf('#') == 0 ? item.slice(1) : item, jackett_url: item.toLowerCase().indexOf('#') == 0 ? item.slice(1) : item, jackett_key: '', interview: item.toLowerCase().indexOf('#') == 0 ? 'all' : 'healthy', selected: false });
+              jackett.jackett_url_pva.split(';').forEach( function(item) {                
+                jackett.items.push({ 
+                  title: item.toLowerCase().indexOf('#') == 0 ? item.slice(1) : item, 
+                  jackett_url: item.toLowerCase().indexOf('#') == 0 ? item.slice(1) : item, 
+                  jackett_key: '', 
+                  interview: item.toLowerCase().indexOf('#') == 0 ? 'all' : 'healthy', selected: false 
+                });
+                if (jackett.items[jackett.items.length-1].title.toLowerCase().indexOf('https://') == 0) jackett.items[jackett.items.length-1].title = jackett.items[jackett.items.length-1].title.slice(8);
+                if (jackett.items[jackett.items.length-1].title.toLowerCase().indexOf('http://') == 0) jackett.items[jackett.items.length-1].title = jackett.items[jackett.items.length-1].title.slice(7);
               });
               var i = 0;
               jackett.jackett_key_pva.split(';').forEach( function(item) {
                 if (jackett.items[i]) jackett.items[i++].jackett_key = item;
-              });
+              });              
               Lampa.Select.show({
                 title: Lampa.Lang.translate('settings_parser_use'),
                 items: jackett.items,
