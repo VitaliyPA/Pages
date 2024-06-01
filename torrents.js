@@ -40,7 +40,7 @@
                 jackett_url: Lampa.Storage.field('jackett_url'), 
                 jackett_key: Lampa.Storage.field('jackett_key'), 
                 jackett_interview: Lampa.Storage.field('jackett_interview'),
-                jackett_url_pva: Lampa.Storage.get('jackett_url_pva', 'jacred.freebie.tom.ru;jacred.ru;jacred.my.to;jac.lampa32.ru;https://jacred.viewbox.dev;jacred.xyz'),
+                jackett_url_pva: Lampa.Storage.get('jackett_url_pva', 'jacred.ru;jacred.freebie.tom.ru;jacred.my.to;jac.lampa32.ru;https://jacred.viewbox.dev;jacred.xyz'),
                 jackett_key_pva: Lampa.Storage.get('jackett_key_pva', ';;;;viewbox;'),
                 items: []
               };
