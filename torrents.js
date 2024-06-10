@@ -80,8 +80,8 @@
                 }                  
               });
             });
-            if (e.data)
-              e.object.activity.render().find('.view--torrent').after(btn);
+            if (e.data && e.object)
+              e.object.activity.render().find('.view--torrent').last().after(btn);
           }
         });
 
