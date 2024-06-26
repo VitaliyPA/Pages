@@ -2,7 +2,7 @@
     'use strict';
 
     function startPlugin() {
-      window.plugin_wath_ready = true;
+      window.plugin_want_ready = true;
 
       function add() {
 
@@ -51,6 +51,6 @@
       }
     }
 
-    if (!window.plugin_wath_ready) startPlugin();
+    if (!window.plugin_want_ready) startPlugin();
 
 })();
