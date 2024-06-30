@@ -40,8 +40,8 @@
                 jackett_url: Lampa.Storage.field('jackett_url'), 
                 jackett_key: Lampa.Storage.field('jackett_key'), 
                 jackett_interview: Lampa.Storage.field('jackett_interview'),
-                jackett_url_pva: Lampa.Storage.get('jackett_url_pva', ['jacred.xyz','jacred.ru','jacred.freebie.tom.ru','jacred.my.to','https://jacred.viewbox.dev'].join(';')),
-                jackett_key_pva: Lampa.Storage.get('jackett_key_pva', ['','','','','viewbox'].join(';')),
+                jackett_url_pva: Lampa.Storage.get('jackett_url_pva', ['jacred.xyz', 'jacred.ru', 'jacred.freebie.tom.ru', 'jacred.my.to', 'https://jacred.viewbox.dev', 'lampa.app', 'api.prisma.ws', '#freebie.tom.ru:9117'].join(';')),
+                jackett_key_pva: Lampa.Storage.get('jackett_key_pva', ['', '', '', '', 'viewbox', '1', 'h45Hty78qXXdmBlOuy43', 'freebie'].join(';')),
                 items: []
               };
               jackett.jackett_url_pva.split(';').forEach( function(item) {                
