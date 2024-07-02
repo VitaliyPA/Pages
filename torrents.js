@@ -40,29 +40,29 @@
                 jackett_url: Lampa.Storage.field('jackett_url'), 
                 jackett_key: Lampa.Storage.field('jackett_key'), 
                 jackett_interview: Lampa.Storage.field('jackett_interview'),
-                jackett_url_pva: Lampa.Storage.get('jackett_url_pva', ['jacred.xyz', 'jacred.ru', 'jacred.freebie.tom.ru', 'jacred.my.to', 'https://jacred.viewbox.dev', 'lampa.app', 'api.prisma.ws', '#freebie.tom.ru:9117'].join(';')),
-                jackett_key_pva: Lampa.Storage.get('jackett_key_pva', ['', '', '', '', 'viewbox', '1', 'h45Hty78qXXdmBlOuy43', 'freebie'].join(';')),
+                jackett_url_pva: Lampa.Storage.get('jackett_url_pva', ['jacred.xyz', 'jacred.ru', 'jacred.freebie.tom.ru', 'jacred.my.to', 'api.prisma.ws', 'https://jacred.viewbox.dev', 'lampa.app', '#freebie.tom.ru:9117'].join(';')),
+                jackett_key_pva: Lampa.Storage.get('jackett_key_pva', ['', '', '', '', 'h45Hty78qXXdmBlOuy43', 'viewbox', '1', 'freebie'].join(';')),
                 items: []
               };
+              function cleanTitle(title) {                
+                return title.replace(/https?:\/\//, '').replace(/^#/, '').replace(/:\d+$/, '').replace(/^api\./, '').replace(/jacred.viewbox.dev/, 'viewbox.dev').replace(/jacred.freebie.tom.ru/, 'freebie.tom.ru');
+              }
               jackett.jackett_url_pva.split(';').forEach( function(item) {                
                 jackett.items.push({ 
-                  title: item.toLowerCase().indexOf('#') == 0 ? item.slice(1) : item, 
+                  title: cleanTitle(item),
                   jackett_url: item.toLowerCase().indexOf('#') == 0 ? item.slice(1) : item, 
                   jackett_key: '', 
                   interview: item.toLowerCase().indexOf('#') == 0 ? 'all' : 'healthy', selected: false 
                 });
-                if (jackett.items[jackett.items.length-1].title.toLowerCase().indexOf('https://') == 0) jackett.items[jackett.items.length-1].title = jackett.items[jackett.items.length-1].title.slice(8);
-                if (jackett.items[jackett.items.length-1].title.toLowerCase().indexOf('http://') == 0) jackett.items[jackett.items.length-1].title = jackett.items[jackett.items.length-1].title.slice(7);
               });
               var i = 0;
               jackett.jackett_key_pva.split(';').forEach( function(item) {
                 if (jackett.items[i]) jackett.items[i++].jackett_key = item;
-              });              
+              });
               Lampa.Select.show({
                 title: Lampa.Lang.translate('settings_parser_use'),
                 items: jackett.items,
                 onSelect: function onSelect(b) {
-
                   try { 
                     Lampa.Storage.set('jackett_url', b.jackett_url);
                     Lampa.Storage.set('jackett_key', b.jackett_key);
@@ -73,7 +73,6 @@
                     Lampa.Storage.set('jackett_url', jackett.jackett_url);
                     Lampa.Storage.set('jackett_key', jackett.jackett_key);
                   }
-
                 },
                 onBack: function onBack() {
                   Lampa.Controller.toggle('content');
