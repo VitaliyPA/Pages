@@ -5,28 +5,15 @@
       window.plugin_tmdb_mod_ready = true;
 
       var Episode = function(data) {
-        var card, episode;
-        if (data && data.card && data.card.source && data.card.source == 'tmdb_mod') {
-          card = data.card;
-          episode = data.episode;
-          Lampa.Arrays.extend(card, {
-            title: card.name,
-            original_title: card.original_name,
-            release_date: card.first_air_date
-          });
-          card.release_year = ((card.release_date || '0000') + '').slice(0, 4);
-          card.source = 'tmdb';
-        }
-        else {
-          card = data;
-          episode = data.next_episode_to_air || {};
-          Lampa.Arrays.extend(card, {
-            title: card.name,
-            original_title: card.original_name,
-            release_date: card.first_air_date
-          });
-          card.release_year = ((card.release_date || '0000') + '').slice(0, 4);
-        }
+        var card = data.card || data;
+        var episode = data.next_episode_to_air || data.episode || {};
+        if (card.source == undefined) card.source = 'tmdb';
+        Lampa.Arrays.extend(card, {
+          title: card.name,
+          original_title: card.original_name,
+          release_date: card.first_air_date
+        });
+        card.release_year = ((card.release_date || '0000') + '').slice(0, 4);
 
         function remove(elem) {
           if (elem) elem.remove();
@@ -83,10 +70,14 @@
         };
 
         this.visible = function () {
-          if (card.poster) this.img_poster.src = card.poster;
+          if (card.poster_path) this.img_poster.src = Lampa.Api.img(card.poster_path);
+            else if (card.profile_path) this.img_poster.src = Lampa.Api.img(card.profile_path);
+            else if (card.poster) this.img_poster.src = card.poster;
             else if (card.img) this.img_poster.src = card.img;
             else this.img_poster.src = './img/img_broken.svg';
-          if (episode.img) this.img_episode.src = episode.img;
+          if (card.still_path) this.img_episode.src = Lampa.Api.img(episode.still_path, 'w300');
+            else if (card.backdrop_path)  this.img_episode.src = Lampa.Api.img(card.backdrop_path, 'w300');
+            else if (episode.img) this.img_episode.src = episode.img;
             else if (card.img) this.img_episode.src = card.img;
             else this.img_episode.src = './img/img_broken.svg';
           if (this.onVisible) this.onVisible(this.card, card);
