@@ -5,15 +5,28 @@
       window.plugin_tmdb_mod_ready = true;
 
       var Episode = function(data) {
-
-        var card = data;
-        var episode = data.next_episode_to_air || {};
-        Lampa.Arrays.extend(card, {
-          title: card.name,
-          original_title: card.original_name,
-          release_date: card.first_air_date
-        });
-        card.release_year = ((card.release_date || '0000') + '').slice(0, 4);
+        var card, episode;
+        if (data && data.card && data.card.source && data.card.source == 'tmdb_mod') {
+          card = data.card;
+          episode = data.episode;
+          Lampa.Arrays.extend(card, {
+            title: card.name,
+            original_title: card.original_name,
+            release_date: card.first_air_date
+          });
+          card.release_year = ((card.release_date || '0000') + '').slice(0, 4);
+          card.source = 'tmdb';
+        }
+        else {
+          card = data;
+          episode = data.next_episode_to_air || {};
+          Lampa.Arrays.extend(card, {
+            title: card.name,
+            original_title: card.original_name,
+            release_date: card.first_air_date
+          });
+          card.release_year = ((card.release_date || '0000') + '').slice(0, 4);
+        }
 
         function remove(elem) {
           if (elem) elem.remove();
@@ -24,7 +37,7 @@
           this.img_poster = this.card.querySelector('.card__img') || {};
           this.img_episode = this.card.querySelector('.full-episode__img img') || {};
           this.card.querySelector('.card__title').innerText = card.title;
-          this.card.querySelector('.full-episode__num').innerText = card.unwatched;
+          this.card.querySelector('.full-episode__num').innerText = card.unwatched || '';
           if (episode && episode.air_date) {
             this.card.querySelector('.full-episode__name').innerText = ('s' + (episode.season_number || '?') + 'e' + (episode.episode_number || '?') + '. ') + (episode.name || Lampa.Lang.translate('noname'));
             this.card.querySelector('.full-episode__date').innerText = episode.air_date ? Lampa.Utils.parseTime(episode.air_date).full : '----';
@@ -116,6 +129,7 @@
             },
             function (call) {
               call({
+                source: 'tmdb',
                 results: Lampa.TimeTable.lately().slice(0, 20),
                 title: Lampa.Lang.translate('title_upcoming_episodes'),
                 nomore: true,
