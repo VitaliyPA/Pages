@@ -4,6 +4,99 @@
     function startPlugin() {
       window.plugin_tmdb_mod_ready = true;
 
+      var Episode = function(data) {
+
+        var card = data;
+        var episode = data.next_episode_to_air || {};
+        Lampa.Arrays.extend(card, {
+          title: card.name,
+          original_title: card.original_name,
+          release_date: card.first_air_date
+        });
+        card.release_year = ((card.release_date || '0000') + '').slice(0, 4);
+
+        function remove(elem) {
+          if (elem) elem.remove();
+        }
+
+        this.build = function () {
+          this.card = Lampa.Template.js('card_episode');
+          this.img_poster = this.card.querySelector('.card__img') || {};
+          this.img_episode = this.card.querySelector('.full-episode__img img') || {};
+          this.card.querySelector('.card__title').innerText = card.title;
+          this.card.querySelector('.full-episode__num').innerText = card.unwatched;
+          if (episode && episode.air_date) {
+            this.card.querySelector('.full-episode__name').innerText = ('s' + (episode.season_number || '?') + 'e' + (episode.episode_number || '?') + '. ') + (episode.name || Lampa.Lang.translate('noname'));
+            this.card.querySelector('.full-episode__date').innerText = episode.air_date ? Lampa.Utils.parseTime(episode.air_date).full : '----';
+          }
+
+          if (card.release_year == '0000') {
+            remove(this.card.querySelector('.card__age'));
+          } else {
+            this.card.querySelector('.card__age').innerText = card.release_year;
+          }
+
+          this.card.addEventListener('visible', this.visible.bind(this));
+        };
+
+        this.image = function () {
+          var _this = this;
+          this.img_poster.onload = function () {
+          };
+          this.img_poster.onerror = function () {
+            _this.img_poster.src = './img/img_broken.svg';
+          };
+          this.img_episode.onload = function () {
+            _this.card.querySelector('.full-episode__img').classList.add('full-episode__img--loaded');
+          };
+          this.img_episode.onerror = function () {
+            _this.img_episode.src = './img/img_broken.svg';
+          };
+        };
+
+        this.create = function () {
+          var _this2 = this;
+          this.build();
+          this.card.addEventListener('hover:focus', function () {
+            if (_this2.onFocus) _this2.onFocus(_this2.card, card);
+          });
+          this.card.addEventListener('hover:hover', function () {
+            if (_this2.onHover) _this2.onHover(_this2.card, card);
+          });
+          this.card.addEventListener('hover:enter', function () {
+            if (_this2.onEnter) _this2.onEnter(_this2.card, card);
+          });
+          this.image();
+        };
+
+        this.visible = function () {
+          if (card.poster) this.img_poster.src = card.poster;
+            else if (card.img) this.img_poster.src = card.img;
+            else this.img_poster.src = './img/img_broken.svg';
+          if (episode.img) this.img_episode.src = episode.img;
+            else if (card.img) this.img_episode.src = card.img;
+            else this.img_episode.src = './img/img_broken.svg';
+          if (this.onVisible) this.onVisible(this.card, card);
+        };
+
+        this.destroy = function () {
+          this.img_poster.onerror = function () {};
+          this.img_poster.onload = function () {};
+          this.img_episode.onerror = function () {};
+          this.img_episode.onload = function () {};
+          this.img_poster.src = '';
+          this.img_episode.src = '';
+          remove(this.card);
+          this.card = null;
+          this.img_poster = null;
+          this.img_episode = null;
+        };
+
+        this.render = function (js) {
+          return js ? this.card : $(this.card);
+        };
+      }
+
       var SourceTMDB = function (parrent) {
         this.network = new Lampa.Reguest();
         this.discovery = false;
