@@ -40,8 +40,8 @@
                 jackett_url: Lampa.Storage.field('jackett_url'), 
                 jackett_key: Lampa.Storage.field('jackett_key'), 
                 jackett_interview: Lampa.Storage.field('jackett_interview'),
-                jackett_url_pva: Lampa.Storage.get('jackett_url_pva', ['jacred.pro', 'jacred.xyz', 'jr.maxvol.pro', 'jacred.freebie.tom.ru', 'trs.my.to:9118', 'jacred.my.to', 'https://lampa.app', /*'#freebie.tom.ru:9117'*/].join(';')),
-                jackett_key_pva: Lampa.Storage.get('jackett_key_pva', ['1', '1', '1', '1', '1', '1', '1', /*'freebie'*/].join(';')),
+                jackett_url_pva: Lampa.Storage.get('jackett_url_pva', ['jacred.pro', 'jacred.xyz', 'jr.maxvol.pro', 'jac.lampadev.ru', 'jacred.freebie.tom.ru', /*'trs.my.to:9118',*/ 'jacred.my.to', 'https://lampa.app', /*'#freebie.tom.ru:9117'*/].join(';')),
+                jackett_key_pva: Lampa.Storage.get('jackett_key_pva', ['1', '1', '1', '1', '1', /*'1',*/ '1', '1', 'freebie'].join(';')),
                 items: []
               };
               function cleanTitle(title) {                
