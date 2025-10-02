@@ -36,12 +36,24 @@
             var btn = $(Lampa.Lang.translate(button));
             btn.on('hover:enter', function () {
 
+              var jackett_default = {
+                'jacred.pro': '1',
+                'jacred.xyz': '1', 
+                'jr.maxvol.pro': '1',
+                // 'jacblack.ru:9117': '1',
+                'jac-red.ru': '1',
+                'jacred.freebie.tom.ru': '1',
+                // 'trs.my.to:9118': '1', 
+                // 'jacred.my.to': '1',
+                // 'https://lampa.app': '1',
+                '#freebie.tom.ru:9117': 'freebie',
+              };
               var jackett = { 
                 jackett_url: Lampa.Storage.field('jackett_url'), 
                 jackett_key: Lampa.Storage.field('jackett_key'), 
                 jackett_interview: Lampa.Storage.field('jackett_interview'),
-                jackett_url_pva: Lampa.Storage.get('jackett_url_pva', ['jacred.pro', 'jacred.xyz', 'jr.maxvol.pro', 'jac.lampadev.ru', 'jacred.freebie.tom.ru', /*'trs.my.to:9118',*/ 'jacred.my.to', 'https://lampa.app', /*'#freebie.tom.ru:9117'*/].join(';')),
-                jackett_key_pva: Lampa.Storage.get('jackett_key_pva', ['1', '1', '1', '1', '1', /*'1',*/ '1', '1', 'freebie'].join(';')),
+                jackett_url_pva: Lampa.Storage.get('jackett_url_pva', Object.keys(jackett_default).join(';')),
+                jackett_key_pva: Lampa.Storage.get('jackett_key_pva', Object.values(jackett_default).join(';')),
                 items: []
               };
               function cleanTitle(title) {                
