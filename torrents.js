@@ -40,7 +40,7 @@
                 'jacred.pro': '1',
                 'jacred.xyz': '1', 
                 'jr.maxvol.pro': '1',
-                // 'jacblack.ru:9117': '1',
+                'jacblack.ru:9117': '1',
                 'jac-red.ru': '1',
                 'jacred.freebie.tom.ru': '1',
                 // 'trs.my.to:9118': '1', 
