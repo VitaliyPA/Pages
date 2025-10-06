@@ -46,7 +46,7 @@
                 // 'trs.my.to:9118': '1', 
                 // 'jacred.my.to': '1',
                 // 'https://lampa.app': '1',
-                '#freebie.tom.ru:9117': 'freebie',
+                // '#freebie.tom.ru:9117': 'freebie',
               };
               var jackett = { 
                 jackett_url: Lampa.Storage.field('jackett_url'), 
