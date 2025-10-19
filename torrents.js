@@ -52,8 +52,8 @@
                 jackett_url: Lampa.Storage.field('jackett_url'), 
                 jackett_key: Lampa.Storage.field('jackett_key'), 
                 jackett_interview: Lampa.Storage.field('jackett_interview'),
-                jackett_url_pva: Lampa.Storage.get('jackett_url_pva', Object.keys(jackett_default).join(';')),
-                jackett_key_pva: Lampa.Storage.get('jackett_key_pva', Object.values(jackett_default).join(';')),
+                jackett_url_pva: Lampa.Storage.get('jackett_url_pva', Lampa.Arrays.getKeys(jackett_default).join(';')),
+                jackett_key_pva: Lampa.Storage.get('jackett_key_pva', Lampa.Arrays.getValues(jackett_default).join(';')),
                 items: []
               };
               function cleanTitle(title) {                
