@@ -39,9 +39,9 @@
               var jackett_default = {
                 'jac.red': '1', 
                 // 'jacred.xyz': '1', 
+                'jacred.stream': 'pp',
                 'jacred.pro': '1',
                 'ru.jacred.pro': '1',
-                // 'jacred.torrservera.net': '1',
                 'jr.maxvol.pro': '1',
                 'jacblack.ru:9117': '1',
                 'jac-red.ru': '1',
