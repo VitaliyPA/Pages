@@ -37,18 +37,14 @@
             btn.on('hover:enter', function () {
 
               var jackett_default = {
+                'ru.jac.black': '1',
+                'jac.black': '1',
                 'jac.red': '1', 
-                // 'jacred.xyz': '1', 
-                'jacred.stream': 'pp',
-                'jacred.pro': '1',
-                'ru.jacred.pro': '1',
-                'jr.maxvol.pro': '1',
-                'jacblack.ru:9117': '1',
                 'jac-red.ru': '1',
+                'ru.jacred.stream': 'pp',
+                'jacred.stream': 'pp',
+                'jr.maxvol.pro': '1',
                 'jacred.freebie.tom.ru': '1',
-                // 'trs.my.to:9118': '1', 
-                // 'jacred.my.to': '1',
-                // 'https://lampa.app': '1',
                 // '#freebie.tom.ru:9117': 'freebie',
               };
               var jackett = { 
