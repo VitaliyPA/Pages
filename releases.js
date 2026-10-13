@@ -15,11 +15,13 @@
         var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
         if (u.toLowerCase().indexOf('http') == 0) return u;
         if (backendver) u = this.add(u, 'v=' + backendver);
-        if (Lampa.PVA && Lampa.PVA.hash) u = this.add(u, 'hash=' + Lampa.PVA.hash);
+        // if (Lampa.PVA && Lampa.PVA.hash) u = this.add(u, 'hash=' + Lampa.PVA.hash);
         if (this.source && u.indexOf('source=') == -1) u = this.add(u, 'source=' + this.source);
         if (params.id) u = this.add(u, 'id=' + params.id);
         if (params.url && params.component != 'category_full') u = this.add(u, 'url=' + params.url);
         if (params.genres) u = this.add(u, 'genre=' + params.genres);
+        if (!params.type && params.query && params.component && params.component == 'category_full') { params.type = params.query; delete params.query; }
+        if (params.type) u = this.add(u, 'type=' + params.type);
         if (params.page) u = this.add(u, 'page=' + params.page);
         if (params.query) u = this.add(u, 'title=' + params.query);
 
@@ -61,45 +63,6 @@
       return this;
     }
 
-    function componentReleases(object) {
-      var comp = Lampa.Maker.make('Category', object, function (module) { return module.toggle(module.MASK.base, 'Pagination') } );
-      comp.network = new Lampa.Reguest();
-      
-      var url_params = '&source=releases&type=new&page=';
-      if (object && object.component)
-        if (object.component == 'releases') url_params = '&source=releases&type=new&page=';
-        else if (object.component == 'releases4K') url_params = '&source=releases&type=new4K&page=';
-        else if (object.component == 'releasesSeries') url_params = '&source=releases&type=series&page=';
-        else if (object.component == 'releasesMults') url_params = '&source=releases&type=mults&page=';
-        else if (object.component == 'releasesAnime') url_params = '&source=releases&type=amime&page=';
-
-      function releases(params, oncomplite, onerror) {
-        comp.network.silent(backendhost + '/lampa/' + 'getSources?v=' + backendver + (Lampa.PVA && Lampa.PVA.hash ? '&hash='+Lampa.PVA.hash : '') + url_params + params.page, oncomplite, onerror);
-      }
-
-      comp.use({
-        onCreate: function(){
-          releases(object, this.build.bind(this), this.empty.bind(this));
-        },        
-        onNext: function onNext(resolve, reject) {
-          releases(object, resolve.bind(this), reject.bind(this));
-        },
-        onInstance: function onInstance(item, data) {
-          item.use({
-            onEnter: Lampa.Router.call.bind(Lampa.Router, 'full', data),
-            onFocus: function onFocus() {
-              Lampa.Background.change(Lampa.Utils.cardImgBackground(data));
-            }
-          });
-        },
-        onDestroy: function onDestroy() {
-          comp.network.clear();
-        }
-      });
-
-      return comp;
-    }
-
     function startPlugin() {
       window.plugin_pvareleases_ready = true;
 
@@ -119,20 +82,21 @@
 
         if (!Lampa.PVA) Lampa.PVA = { main: [], timeline: {} };
 
+        Lampa.PVA.hash = Lampa.Utils.hash(Lampa.Storage.get('account_email', 'releases').toLowerCase().trim());
         if (Lampa.Storage.get('pva_sources_main_add_releases_new', '0') > 0) {
-          Lampa.PVA.main.push({ name: 'releases_new', source: 'releases', url: 'getSources?source=releases&type=new', index: Lampa.Storage.get('pva_sources_main_add_releases_new', '0'), title: 'Новые фильмы в качестве', results: [] });
+          Lampa.PVA.main.push({ name: 'releases_new', source: 'releases', url: 'getSources', type: 'new', index: Lampa.Storage.get('pva_sources_main_add_releases_new', '0'), title: 'Новые фильмы в качестве', results: [] });
         }
         if (Lampa.Storage.get('pva_sources_main_add_releases_new4K', '0') > 0) {
-          Lampa.PVA.main.push({ name: 'releases_new4K', source: 'releases', url: 'getSources?source=releases&type=new4K', index: Lampa.Storage.get('pva_sources_main_add_releases_new4K', '0'), title: 'Новые фильмы в 4К качестве', results: [] });
+          Lampa.PVA.main.push({ name: 'releases_new4K', source: 'releases', url: 'getSources', type: 'new4K', index: Lampa.Storage.get('pva_sources_main_add_releases_new4K', '0'), title: 'Новые фильмы в 4К качестве', results: [] });
         }
         if (Lampa.Storage.get('pva_sources_main_add_releases_series', '0') > 0) {
-          Lampa.PVA.main.push({ name: 'releases_series', source: 'releases', url: 'getSources?source=releases&type=series', index: Lampa.Storage.get('pva_sources_main_add_releases_series', '0'), title: 'Новые сериалы/серии', results: [] });
+          Lampa.PVA.main.push({ name: 'releases_series', source: 'releases', url: 'getSources', type: 'series', index: Lampa.Storage.get('pva_sources_main_add_releases_series', '0'), title: 'Новые сериалы/серии', results: [] });
         }
         if (Lampa.Storage.get('pva_sources_main_add_releases_mults', '0') > 0) {
-          Lampa.PVA.main.push({ name: 'releases_mults', source: 'releases', url: 'getSources?source=releases&type=mults', index: Lampa.Storage.get('pva_sources_main_add_releases_mults', '0'), title: 'Новые мультфильмы/мультсериалы', results: [] });
+          Lampa.PVA.main.push({ name: 'releases_mults', source: 'releases', url: 'getSources', type: 'mults', index: Lampa.Storage.get('pva_sources_main_add_releases_mults', '0'), title: 'Новые мультфильмы/мультсериалы', results: [] });
         }
         if (Lampa.Storage.get('pva_sources_main_add_releases_amime', '0') > 0) {
-          Lampa.PVA.main.push({ name: 'releases_amime', source: 'releases', url: 'getSources?source=releases&type=amime', index: Lampa.Storage.get('pva_sources_main_add_releases_amime', '0'), title: 'Новые аниме', results: [] });
+          Lampa.PVA.main.push({ name: 'releases_amime', source: 'releases', url: 'getSources', type: 'amime', index: Lampa.Storage.get('pva_sources_main_add_releases_amime', '0'), title: 'Новые аниме', results: [] });
         }
 
         if (Lampa.PVA.main.length && ["tmdb", "cub"].indexOf(Lampa.Storage.get('source', 'tmdb')) >= 0) {
@@ -147,18 +111,19 @@
               source: src.source,
               nomore: src.nomore || false,
               call: function call(params, screen) {
-                  return function (call) {
-                    Lampa.Api.sources[src.source].get(src.url, src.params, function (json) {
-                      json.title = src.title;
-                      json.source = src.source;
-                      json.url = src.url;
-                      json.nomore = src.nomore || false;
-                      (json.results || []).forEach( function (item) { 
-                        if (!item.source) item.source = src.source;
-                      });
-                      call(json);
-                    }, call)
-                  }
+                return function (call) {
+                  Lampa.Api.sources[src.source].get(src.url, Object.assign(params, { type: src.type }), function (json) {
+                    json.title = src.title;
+                    json.source = src.source;
+                    json.url = src.url;
+                    json.query = src.type;
+                    json.nomore = src.nomore || false;
+                    (json.results || []).forEach( function (item) { 
+                      if (!item.source) item.source = src.source;
+                    });
+                    call(json);
+                  }, call)
+                }
               }
             });
           });
@@ -195,17 +160,17 @@
             Lampa.Select.show({
               title: Lampa.Lang.translate('menu_relises')+'+',
               items: [
-                { title: 'Releases', source: 'tmdb', component: 'releases' }, 
-                { title: 'Releases 4K', source: 'tmdb', component: 'releases4K' }, 
-                { title: 'Releases Series', source: 'tmdb', component: 'releasesSeries' },
-                { title: 'Releases Mults', source: 'tmdb', component: 'releasesMults' },
-                { title: 'Releases Anime', source: 'tmdb', component: 'releasesAnime' },
+                { title: 'Releases', source: 'releases', url: 'getSources', type: 'new', component: 'category_full' }, 
+                { title: 'Releases 4K', source: 'releases', url: 'getSources', type: 'new4K', component: 'category_full' }, 
+                { title: 'Releases Series', source: 'releases', url: 'getSources', type: 'series', component: 'category_full' },
+                { title: 'Releases Mults', source: 'releases', url: 'getSources', type: 'mults', component: 'category_full' },
+                { title: 'Releases Anime', source: 'releases', url: 'getSources', type: 'amime', component: 'category_full' },
               ],
               onSelect: function onSelect(b) {
-                if (b.component && b.source == 'tmdb' && !Lampa.Component.get(b.component)) Lampa.Component.add(b.component, componentReleases);
                 Lampa.Activity.push({
                   title: b.title,
                   url: b.url,
+                  type: b.type,
                   component: b.component || 'main',
                   source: b.source,
                   page: 1
@@ -327,4 +292,4 @@
 
     if (!window.plugin_pvareleases_ready && !window.plugin_sources_ready) startPlugin();
 
-})( 'https://cache.freebie.tom.ru', 1, 'https', 'cache.freebie.tom.ru' );
+})( 'https://cache.freebie.tom.ru', 10, 'https', 'cache.freebie.tom.ru' );
