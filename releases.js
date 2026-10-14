@@ -20,10 +20,9 @@
         if (params.id) u = this.add(u, 'id=' + params.id);
         if (params.url && params.component != 'category_full') u = this.add(u, 'url=' + params.url);
         if (params.genres) u = this.add(u, 'genre=' + params.genres);
-        if (!params.type && params.query && params.component && params.component == 'category_full') { params.type = params.query; delete params.query; }
-        if (params.type) u = this.add(u, 'type=' + params.type);
-        if (params.page) u = this.add(u, 'page=' + params.page);
         if (params.query) u = this.add(u, 'title=' + params.query);
+        if (params.type || params.companies) u = this.add(u, 'type=' + params.type || params.companies);
+        if (params.page) u = this.add(u, 'page=' + params.page);        
 
         if (params.filter) {
           for (var i in params.filter) {
@@ -100,7 +99,7 @@
         }
 
         if (Lampa.PVA.main.length && ["tmdb", "cub"].indexOf(Lampa.Storage.get('source', 'tmdb')) >= 0) {
-          
+
           var network = new Lampa.Reguest();
           Lampa.PVA.main.forEach( function (src) {
             Lampa.ContentRows.add({
@@ -116,7 +115,8 @@
                     json.title = src.title;
                     json.source = src.source;
                     json.url = src.url;
-                    json.query = src.type;
+                    json.type = src.type;
+                    json.companies = src.type;
                     json.nomore = src.nomore || false;
                     (json.results || []).forEach( function (item) { 
                       if (!item.source) item.source = src.source;
