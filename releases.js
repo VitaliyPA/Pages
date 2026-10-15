@@ -15,7 +15,7 @@
         var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
         if (u.toLowerCase().indexOf('http') == 0) return u;
         if (backendver) u = this.add(u, 'v=' + backendver);
-        // if (Lampa.PVA && Lampa.PVA.hash) u = this.add(u, 'hash=' + Lampa.PVA.hash);
+        if (Lampa.PVA && Lampa.PVA.hash) u = this.add(u, 'hash=' + Lampa.PVA.hash);
         if (this.source && u.indexOf('source=') == -1) u = this.add(u, 'source=' + this.source);
         if (params.id) u = this.add(u, 'id=' + params.id);
         if (params.url && params.component != 'category_full') u = this.add(u, 'url=' + params.url);
@@ -43,7 +43,7 @@
           if (json && json.error) { onerror(); Lampa.Noty.show(json.error); return; }
           json.url = method;
           oncomplite(json);
-        }, onerror, (data ? JSON.stringify(data) : undefined), { cache: { life: 15 }} );
+        }, onerror, (data ? JSON.stringify(data) : undefined), { cache: { life: 180 }} );
       }
 
       this.list =  function () {
@@ -52,7 +52,7 @@
         var onerror = arguments.length > 2 ? arguments[2] : undefined;
         var u = this.url(params.url, params);        
         var data = (this.getData ? this.getData(u, params) : undefined);        
-        this.network.silent(u, oncomplite, onerror, (data ? JSON.stringify(data) : undefined), { cache: { life: 15 }} );
+        this.network.silent(u, oncomplite, onerror, (data ? JSON.stringify(data) : undefined), { cache: { life: 180 }} );
       };
 
       this.clear = function () {
@@ -81,7 +81,7 @@
 
         if (!Lampa.PVA) Lampa.PVA = { main: [], timeline: {} };
 
-        Lampa.PVA.hash = Lampa.Utils.hash(Lampa.Storage.get('account_email', 'releases').toLowerCase().trim());
+        Lampa.PVA.hash = Lampa.Utils.hash(Lampa.Storage.get('account_email', 'releases@cloudflare.com').toLowerCase().trim());
         if (Lampa.Storage.get('pva_sources_main_add_releases_new', '0') > 0) {
           Lampa.PVA.main.push({ name: 'releases_new', source: 'releases', url: 'getSources', type: 'new', index: Lampa.Storage.get('pva_sources_main_add_releases_new', '0'), title: 'Новые фильмы в качестве', results: [] });
         }
@@ -292,4 +292,4 @@
 
     if (!window.plugin_pvareleases_ready && !window.plugin_sources_ready) startPlugin();
 
-})( 'https://cache.freebie.tom.ru', 10, 'https', 'cache.freebie.tom.ru' );
+})( 'https://freebie.tom.ru' || 'https://cache.freebie.tom.ru', '999' );
