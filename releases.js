@@ -46,7 +46,7 @@
           if (json && json.error) { onerror(); Lampa.Noty.show(json.error); return; }
           json.url = method;
           oncomplite(json);
-        }, onerror, (data ? JSON.stringify(data) : undefined), { cache: { life: 180 }} );
+        }, onerror, (data ? JSON.stringify(data) : undefined), { cache: { life: 120 }} );
       }
 
       this.list =  function () {
@@ -55,7 +55,7 @@
         var onerror = arguments.length > 2 ? arguments[2] : undefined;
         var u = this.url(params.url, params);        
         var data = (this.getData ? this.getData(u, params) : undefined);        
-        this.network.silent(u, oncomplite, onerror, (data ? JSON.stringify(data) : undefined), { cache: { life: 180 }} );
+        this.network.silent(u, oncomplite, onerror, (data ? JSON.stringify(data) : undefined), { cache: { life: 120 }} );
       };
 
       this.clear = function () {
