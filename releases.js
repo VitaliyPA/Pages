@@ -22,7 +22,7 @@
         if (params.genres) u = this.add(u, 'genre=' + params.genres);
         if (params.query) u = this.add(u, 'title=' + params.query);
         if (params.type || params.companies) {
-          u = this.add(u, 'no_kp=' + true);
+          u = this.add(u, 'no_kp=true');
           u = this.add(u, 'type=' + (params.type || params.companies));
         }        
         if (params.page) u = this.add(u, 'page=' + params.page);        
