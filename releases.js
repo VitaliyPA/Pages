@@ -6,6 +6,7 @@
       this.title = 'Releases';
       this.source = 'releases';
       this.baseurl = backendhost + '/lampa/';  
+      this.cache = { life: 120 };
 
       this.add = function (u, params) {
         return u + (/\?/.test(u) ? '&' : '?') + params;
@@ -46,7 +47,7 @@
           if (json && json.error) { onerror(); Lampa.Noty.show(json.error); return; }
           json.url = method;
           oncomplite(json);
-        }, onerror, (data ? JSON.stringify(data) : undefined), { cache: { life: 120 }} );
+        }, onerror, (data ? JSON.stringify(data) : undefined), { cache: this.cache } );
       }
 
       this.list =  function () {
@@ -55,7 +56,7 @@
         var onerror = arguments.length > 2 ? arguments[2] : undefined;
         var u = this.url(params.url, params);        
         var data = (this.getData ? this.getData(u, params) : undefined);        
-        this.network.silent(u, oncomplite, onerror, (data ? JSON.stringify(data) : undefined), { cache: { life: 120 }} );
+        this.network.silent(u, oncomplite, onerror, (data ? JSON.stringify(data) : undefined), { cache: this.cache } );
       };
 
       this.clear = function () {
@@ -163,11 +164,11 @@
             Lampa.Select.show({
               title: Lampa.Lang.translate('menu_relises')+'+',
               items: [
-                { title: 'Releases', source: 'releases', url: 'getSources', type: 'new', component: 'category_full' }, 
-                { title: 'Releases 4K', source: 'releases', url: 'getSources', type: 'new4K', component: 'category_full' }, 
-                { title: 'Releases Series', source: 'releases', url: 'getSources', type: 'series', component: 'category_full' },
-                { title: 'Releases Mults', source: 'releases', url: 'getSources', type: 'mults', component: 'category_full' },
-                { title: 'Releases Anime', source: 'releases', url: 'getSources', type: 'amime', component: 'category_full' },
+                { title: 'Новые фильмы', source: 'releases', url: 'getSources', type: 'new', component: 'category_full' }, 
+                { title: 'Новые фильмы 4K', source: 'releases', url: 'getSources', type: 'new4K', component: 'category_full' }, 
+                { title: 'Новые сериалы/серии', source: 'releases', url: 'getSources', type: 'series', component: 'category_full' },
+                { title: 'Новые мультики', source: 'releases', url: 'getSources', type: 'mults', component: 'category_full' },
+                { title: 'Новые аниме', source: 'releases', url: 'getSources', type: 'amime', component: 'category_full' },
               ],
               onSelect: function onSelect(b) {
                 Lampa.Activity.push({
