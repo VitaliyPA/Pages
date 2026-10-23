@@ -26,13 +26,8 @@
           u = this.add(u, 'no_kp=true');
           u = this.add(u, 'type=' + (params.type || params.companies));
         }        
+        if (params.filter) u = this.add(u, 'filter=' + params.filter);
         if (params.page) u = this.add(u, 'page=' + params.page);        
-
-        if (params.filter) {
-          for (var i in params.filter) {
-            u = this.add(u, i + '=' + params.filter[i]);
-          }
-        }
 
         return this.baseurl + u;
       }
@@ -103,6 +98,12 @@
         if (Lampa.Storage.get('pva_sources_main_add_releases_amime', '0') > 0) {
           Lampa.PVA.main.push({ name: 'releases_amime', source: 'releases', url: 'getSources', type: 'amime', index: Lampa.Storage.get('pva_sources_main_add_releases_amime', '0'), title: 'Новые аниме', results: [] });
         }
+        if (Lampa.Storage.get('pva_sources_main_add_releases_ru', '0') > 0) {
+          Lampa.PVA.main.push({ name: 'releases_new', source: 'releases', url: 'getSources', type: 'new', filter: 'RU', index: Lampa.Storage.get('pva_sources_main_add_releases_ru', '0'), title: 'Новые русские', results: [] });
+        }
+        if (Lampa.Storage.get('pva_sources_main_add_releases_asia', '0') > 0) {
+          Lampa.PVA.main.push({ name: 'releases_new', source: 'releases', url: 'getSources', type: 'new', filter: 'KR,CN,JP,TH,TW', index: Lampa.Storage.get('pva_sources_main_add_releases_asia', '0'), title: 'Новые азиатские', results: [] });
+        }
 
         if (Lampa.PVA.main.length && ["tmdb", "cub"].indexOf(Lampa.Storage.get('source', 'tmdb')) >= 0) {
 
@@ -117,12 +118,13 @@
               nomore: src.nomore || false,
               call: function call(params, screen) {
                 return function (call) {
-                  Lampa.Api.sources[src.source].get(src.url, Object.assign(params, { type: src.type }), function (json) {
+                  Lampa.Api.sources[src.source].get(src.url, Object.assign(params, { type: src.type, filter: src.filter }), function (json) {
                     json.title = src.title;
                     json.source = src.source;
                     json.url = src.url;
                     json.type = src.type;
                     json.companies = src.type;
+                    json.filter = src.filter;
                     json.nomore = src.nomore || false;
                     (json.results || []).forEach( function (item) { 
                       if (!item.source) item.source = src.source;
@@ -171,12 +173,15 @@
                 { title: 'Новые сериалы/серии', source: 'releases', url: 'getSources', type: 'series', component: 'category_full' },
                 { title: 'Новые мультики', source: 'releases', url: 'getSources', type: 'mults', component: 'category_full' },
                 { title: 'Новые аниме', source: 'releases', url: 'getSources', type: 'amime', component: 'category_full' },
+                { title: 'Новые русские', source: 'releases', url: 'getSources', type: 'new', filter: 'RU', component: 'category_full' },
+                { title: 'Новые азиатские', source: 'releases', url: 'getSources', type: 'new', filter: 'KR,CN,JP,TH,TW', component: 'category_full' },
               ],
               onSelect: function onSelect(b) {
                 Lampa.Activity.push({
                   title: b.title,
                   url: b.url,
                   type: b.type,
+                  filter: b.filter,
                   component: b.component || 'main',
                   source: b.source,
                   page: 1
@@ -205,6 +210,8 @@
           { param_name: 'pva_sources_main_add_releases_series', field_name: 'Новые сериалы/серии' },
           { param_name: 'pva_sources_main_add_releases_mults', field_name: 'Новые мультфильмы/мультсериалы' },
           { param_name: 'pva_sources_main_add_releases_amime', field_name: 'Новые аниме' },
+          { param_name: 'pva_sources_main_add_releases_ru', field_name: 'Новые русские' },
+          { param_name: 'pva_sources_main_add_releases_asia', field_name: 'Новые азиатские' },
         ].forEach( function (item) {
           Lampa.SettingsApi.addParam({
             component: 'pva_releases_menu',
