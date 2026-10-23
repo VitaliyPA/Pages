@@ -71,6 +71,8 @@
 
       function add() {
 
+        if (Lampa.Storage.get('pva_releases_over_cloudflare', false)) backendhost = backendhost_cf; else backendhost = backendhost_https;
+
         function makeSource(name, source, addSearch) {
           Lampa.Api.sources[name] = source;
           Object.defineProperty(Lampa.Api.sources, name, {
@@ -235,6 +237,22 @@
           });
         });
 
+        Lampa.SettingsApi.addParam({
+          component: 'pva_releases_menu',
+          param: {
+            name: 'pva_releases_over_cloudflare',
+            type: 'trigger', //доступно select,input,trigger,title,static
+            default: false
+          },
+          field: {
+            name: 'Cloudflare',
+            description: 'Получать данные через Cloudflare'
+          },
+          onChange: function (value) {
+          }
+        });
+
+
       }
 
       function override() {
@@ -296,4 +314,4 @@
 
     if (!window.plugin_pvareleases_ready && !window.plugin_sources_ready) startPlugin();
 
-})( 'https://freebie.tom.ru' || 'https://cache.freebie.tom.ru', '999' );
+})( 'http://freebie.tom.ru', '999', '[REQUEST_SCHEME]', '[HTTP_HOST]', 'https://freebie.tom.ru', 'https://cache.freebie.tom.ru' );
