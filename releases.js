@@ -78,7 +78,7 @@
           });
           if (addSearch == false) source.discovery = false;
         }
-        makeSource('releases', new SourceReleases, false );        
+        makeSource('releases', new SourceReleases, false );
 
         if (!Lampa.PVA) Lampa.PVA = { main: [], timeline: {} };
 
@@ -100,6 +100,9 @@
         }
         if (Lampa.Storage.get('pva_sources_main_add_releases_ru', '0') > 0) {
           Lampa.PVA.main.push({ name: 'releases_new', source: 'releases', url: 'getSources', type: 'new', filter: 'RU', index: Lampa.Storage.get('pva_sources_main_add_releases_ru', '0'), title: 'Новые русские', results: [] });
+        }
+        if (Lampa.Storage.get('pva_sources_main_add_releases_tr', '0') > 0) {
+          Lampa.PVA.main.push({ name: 'releases_new', source: 'releases', url: 'getSources', type: 'new', filter: 'TR', index: Lampa.Storage.get('pva_sources_main_add_releases_tr', '0'), title: 'Новые турецкие', results: [] });
         }
         if (Lampa.Storage.get('pva_sources_main_add_releases_asia', '0') > 0) {
           Lampa.PVA.main.push({ name: 'releases_new', source: 'releases', url: 'getSources', type: 'new', filter: 'KR,CN,JP,TH,TW', index: Lampa.Storage.get('pva_sources_main_add_releases_asia', '0'), title: 'Новые азиатские', results: [] });
@@ -174,6 +177,7 @@
                 { title: 'Новые мультики', source: 'releases', url: 'getSources', type: 'mults', component: 'category_full' },
                 { title: 'Новые аниме', source: 'releases', url: 'getSources', type: 'amime', component: 'category_full' },
                 { title: 'Новые русские', source: 'releases', url: 'getSources', type: 'new', filter: 'RU', component: 'category_full' },
+                { title: 'Новые турецкие', source: 'releases', url: 'getSources', type: 'new', filter: 'TR', component: 'category_full' },
                 { title: 'Новые азиатские', source: 'releases', url: 'getSources', type: 'new', filter: 'KR,CN,JP,TH,TW', component: 'category_full' },
               ],
               onSelect: function onSelect(b) {
@@ -211,6 +215,7 @@
           { param_name: 'pva_sources_main_add_releases_mults', field_name: 'Новые мультфильмы/мультсериалы' },
           { param_name: 'pva_sources_main_add_releases_amime', field_name: 'Новые аниме' },
           { param_name: 'pva_sources_main_add_releases_ru', field_name: 'Новые русские' },
+          { param_name: 'pva_sources_main_add_releases_tr', field_name: 'Новые турецкие' },
           { param_name: 'pva_sources_main_add_releases_asia', field_name: 'Новые азиатские' },
         ].forEach( function (item) {
           Lampa.SettingsApi.addParam({
